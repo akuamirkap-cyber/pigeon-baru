@@ -25,16 +25,18 @@ function Pair({
   p,
   s,
   c,
+  r,
 }: {
   x: number;
   p: [number, number, number];
   s: [number, number, number];
   c: string;
+  r?: [number, number, number];
 }) {
   return (
     <>
-      <B p={[x, p[1], p[2]]} s={s} c={c} />
-      <B p={[-x, p[1], p[2]]} s={s} c={c} />
+      <B p={[x, p[1], p[2]]} s={s} c={c} r={r} />
+      <B p={[-x, p[1], p[2]]} s={s} c={c} r={r ? [r[0], -r[1], -r[2]] : undefined} />
     </>
   );
 }
@@ -483,61 +485,118 @@ export function Broom() {
   );
 }
 
-/* ================= UFO MINI ================= */
+/* ================= UFO SAUCER SKATEBOARD (TANPA RODA) ================= */
 export function Ufo() {
-  const silver = "#B9C4CE";
-  const silverD = "#8D99A6";
-  const dome = "#7FDBFF";
-  const glow = "#B4F04A";
+  const silver = "#C6D2DE";
+  const silverD = "#8E9DAE";
+  const deckPlate = "#273240";
+  const neonCyan = "#5AC8FF";
+  const neonLime = "#9EF032";
+  const glowBeam = "#BFFF7A";
+
   return (
     <group position={[0, 2.3, 0]}>
-      {/* saucer body (stacked discs) - 40% lebih kecil (skala 0.6x) */}
-      <B p={[0, 0, 0]} s={[2.4, 0.45, 2.4]} c={silver} />
-      <B p={[0, 0.28, 0]} s={[1.8, 0.4, 1.8]} c={silverD} />
-      <B p={[0, -0.28, 0]} s={[1.74, 0.35, 1.74]} c={silverD} />
-      {/* glass dome */}
-      <mesh position={[0, 0.88, 0]} castShadow>
-        <boxGeometry args={[1.45, 1.15, 1.45]} />
+      {/* Cakram utama UFO aerodynamic (saucer body) */}
+      <B p={[0, 0, 0]} s={[2.7, 0.38, 2.7]} c={silver} />
+      <B p={[0, 0.14, 0]} s={[2.3, 0.22, 2.3]} c={silverD} />
+      <B p={[0, -0.16, 0]} s={[2.2, 0.24, 2.2]} c={silverD} />
+
+      {/* Platform dek pijakan kaki di atas saucer (tempat berdiri karakter) */}
+      <B p={[0, 0.24, 0]} s={[1.9, 0.08, 1.9]} c={deckPlate} />
+      {/* Cincin energi neon di dek */}
+      <B p={[0, 0.28, 0]} s={[1.4, 0.03, 1.4]} c={neonCyan} />
+      <B p={[0, 0.29, 0]} s={[0.7, 0.03, 0.7]} c={neonLime} />
+
+      {/* Lampu navigasi perimeter rim (merah, kuning, biru, lime, pink, ungu) */}
+      <B p={[1.25, 0.02, 0]} s={[0.22, 0.18, 0.22]} c="#FF5A5A" />
+      <B p={[-1.25, 0.02, 0]} s={[0.22, 0.18, 0.22]} c="#FFD93D" />
+      <B p={[0, 0.02, 1.25]} s={[0.22, 0.18, 0.22]} c="#5AC8FF" />
+      <B p={[0, 0.02, -1.25]} s={[0.22, 0.18, 0.22]} c="#B4F04A" />
+      <B p={[0.88, 0.02, 0.88]} s={[0.18, 0.16, 0.18]} c="#FF5AC8" />
+      <B p={[-0.88, 0.02, -0.88]} s={[0.18, 0.16, 0.18]} c="#9B5AFF" />
+      <B p={[-0.88, 0.02, 0.88]} s={[0.18, 0.16, 0.18]} c="#5AFFC8" />
+      <B p={[0.88, 0.02, -0.88]} s={[0.18, 0.16, 0.18]} c="#FF9500" />
+
+      {/* Kubah mesin anti-gravitasi di bagian bawah */}
+      <B p={[0, -0.35, 0]} s={[1.4, 0.2, 1.4]} c={deckPlate} />
+      <B p={[0, -0.48, 0]} s={[0.9, 0.14, 0.9]} c={neonLime} />
+
+      {/* Sinar traktor anti-gravitasi melayang di bawah UFO (tanpa roda) */}
+      <mesh position={[0, -0.85, 0]}>
+        <boxGeometry args={[1.1, 0.6, 1.1]} />
         <meshStandardMaterial
-          color={dome}
-          roughness={0.15}
+          color={glowBeam}
           transparent
-          opacity={0.6}
-        />
-      </mesh>
-      {/* tiny alien pilot inside - UKURAN ASLI TETAP SAMA */}
-      <B p={[0, 0.85, 0]} s={[0.7, 0.75, 0.6]} c={glow} />
-      <Pair x={0.2} p={[0, 1.0, 0.31]} s={[0.16, 0.22, 0.06]} c="#1d1d1f" />
-      <Pair x={0.3} p={[0, 1.4, 0]} s={[0.08, 0.3, 0.08]} c={glow} />
-      <Pair x={0.3} p={[0, 1.58, 0]} s={[0.16, 0.16, 0.16]} c="#8FE03A" />
-      {/* rim lights */}
-      <B p={[1.05, 0, 0]} s={[0.22, 0.22, 0.22]} c="#FF5A5A" />
-      <B p={[-1.05, 0, 0]} s={[0.22, 0.22, 0.22]} c="#FFD93D" />
-      <B p={[0, 0, 1.05]} s={[0.22, 0.22, 0.22]} c="#5AC8FF" />
-      <B p={[0, 0, -1.05]} s={[0.22, 0.22, 0.22]} c="#9B5AFF" />
-      {/* tractor beam */}
-      <mesh position={[0, -1.15, 0]}>
-        <boxGeometry args={[1.0, 1.4, 1.0]} />
-        <meshStandardMaterial
-          color="#BFFF7A"
-          transparent
-          opacity={0.25}
-          emissive="#9AE84A"
+          opacity={0.35}
+          emissive={glowBeam}
           emissiveIntensity={0.6}
         />
       </mesh>
-      <mesh position={[0, -1.85, 0]}>
-        <boxGeometry args={[1.45, 0.7, 1.45]} />
+      <mesh position={[0, -1.3, 0]}>
+        <boxGeometry args={[1.5, 0.5, 1.5]} />
         <meshStandardMaterial
-          color="#BFFF7A"
+          color={glowBeam}
           transparent
-          opacity={0.15}
-          emissive="#9AE84A"
+          opacity={0.18}
+          emissive={glowBeam}
           emissiveIntensity={0.4}
         />
       </mesh>
-      {/* landing feet */}
-      <Pair x={0.81} p={[0, -0.6, 0]} s={[0.22, 0.4, 0.22]} c={silverD} />
+    </group>
+  );
+}
+
+/* ================= ALIEN HIJAU (KARAKTER LENGKAP DENGAN BADAN, KAKI & TANGAN) ================= */
+export function Alien() {
+  const green = "#8BE32A";
+  const greenDark = "#6DB818";
+  const greenLight = "#ABF54A";
+  const suit = "#2C384A";
+  const silver = "#C6D2DE";
+  const eye = "#121418";
+  const gold = "#FFD60A";
+  const cyan = "#38C2F0";
+
+  return (
+    <group>
+      {/* Kaki alien dengan sepatu perak antariksa */}
+      <Pair x={0.52} p={[0, 0.65, 0.02]} s={[0.42, 1.1, 0.44]} c={greenDark} />
+      <Pair x={0.52} p={[0, 0.16, 0.14]} s={[0.48, 0.32, 0.68]} c={silver} />
+      <Pair x={0.52} p={[0, 0.06, 0.14]} s={[0.44, 0.14, 0.64]} c={cyan} />
+
+      {/* Badan / Torso alien mengenakan rompi/baju astronot */}
+      <B p={[0, 2.2, 0]} s={[1.85, 1.9, 1.45]} c={green} />
+      {/* Sabuk perak + gesper emas */}
+      <B p={[0, 1.42, 0]} s={[1.92, 0.3, 1.52]} c={silver} />
+      <B p={[0, 1.42, 0.78]} s={[0.44, 0.34, 0.08]} c={gold} />
+      {/* Lencana kosmik di dada */}
+      <B p={[0, 2.35, 0.75]} s={[0.55, 0.55, 0.08]} c={suit} />
+      <B p={[0, 2.35, 0.79]} s={[0.3, 0.3, 0.04]} c={cyan} />
+
+      {/* Lengan & Tangan alien hijau (lengkap bukan sayap) */}
+      <Pair x={1.16} p={[0, 2.35, 0.02]} s={[0.38, 1.25, 0.4]} c={green} />
+      <Pair x={1.16} p={[0, 1.55, 0.1]} s={[0.42, 0.45, 0.48]} c={greenDark} />
+      {/* Jari-jari alien */}
+      <Pair x={1.16} p={[0, 1.42, 0.3]} s={[0.34, 0.22, 0.16]} c={greenLight} />
+
+      {/* Kepala Alien Hijau khas martian/extraterrestrial */}
+      <B p={[0, 3.85, 0.08]} s={[2.0, 1.7, 1.7]} c={green} />
+      <B p={[0, 4.45, 0.08]} s={[1.7, 0.45, 1.5]} c={greenLight} />
+
+      {/* Mata besar lonjong hitam mengkilap khas alien */}
+      <Pair x={0.55} p={[0, 3.9, 0.88]} s={[0.5, 0.65, 0.14]} c={eye} r={[0, 0, 0.12]} />
+      {/* Kilau mata putih */}
+      <Pair x={0.48} p={[0, 4.08, 0.96]} s={[0.16, 0.18, 0.06]} c="#ffffff" />
+      <Pair x={0.62} p={[0, 3.75, 0.96]} s={[0.1, 0.1, 0.06]} c="#ffffff" />
+
+      {/* Mulut alien imut */}
+      <B p={[0, 3.32, 0.95]} s={[0.4, 0.08, 0.06]} c={greenDark} />
+
+      {/* Antena kembar di atas kepala */}
+      <Pair x={0.5} p={[0, 4.95, 0.08]} s={[0.14, 0.75, 0.14]} c={greenDark} r={[0, 0, -0.18]} />
+      {/* Bola bercahaya di ujung antena */}
+      <Pair x={0.65} p={[0, 5.42, 0.08]} s={[0.38, 0.38, 0.38]} c={greenLight} />
+      <Pair x={0.65} p={[0, 5.42, 0.08]} s={[0.22, 0.22, 0.22]} c="#D4FFA0" />
     </group>
   );
 }
@@ -588,42 +647,60 @@ export function SurferBoard() {
 
 /* ================= SHAUN THE SHEEP ================= */
 export function ShaunSheep() {
-  const wool = "#F5F2E8";
-  const woolD = "#E5E0D0";
-  const skin = "#2E2A28";
-  const skinL = "#4A4440";
+  const wool = "#F7F5EE";
+  const woolD = "#E5E1D5";
+  const black = "#1A1816";
+  const blackD = "#11100F";
+  const blackL = "#262320";
   return (
     <group>
-      {/* kaki hitam kurus */}
-      <Pair x={0.55} p={[0, 0.6, 0.1]} s={[0.4, 1.2, 0.45]} c={skin} />
-      <Pair x={0.55} p={[0, 0.14, 0.2]} s={[0.46, 0.28, 0.65]} c={skinL} />
-      {/* badan wol gemuk bertumpuk */}
-      <B p={[0, 2.3, -0.1]} s={[2.4, 2.2, 2.6]} c={wool} />
-      {/* gumpalan wol biar fluffy */}
-      <B p={[0, 3.4, -0.2]} s={[1.9, 0.6, 2.1]} c={woolD} />
-      <Pair x={1.3} p={[0, 2.5, -0.1]} s={[0.4, 1.5, 2.0]} c={woolD} />
-      <B p={[0, 2.4, -1.5]} s={[1.8, 1.6, 0.4]} c={woolD} />
-      {/* ekor kecil */}
-      <B p={[0, 2.9, -1.7]} s={[0.5, 0.5, 0.4]} c={wool} />
-      {/* lengan & tangan hitam Shaun the Sheep (bukan sayap!) */}
-      <Pair x={1.22} p={[0, 2.1, 0.1]} s={[0.36, 1.4, 0.42]} c={skin} />
-      <Pair x={1.22} p={[0, 1.35, 0.16]} s={[0.42, 0.35, 0.5]} c={skinL} />
-      {/* kepala hitam (menyatu dengan badan wol) */}
-      <B p={[0, 3.95, 0.85]} s={[1.5, 1.7, 1.5]} c={skin} />
-      {/* mata putih besar + pupil */}
-      <Pair x={0.45} p={[0, 4.25, 1.52]} s={[0.5, 0.6, 0.14]} c="#ffffff" />
-      <Pair x={0.38} p={[0, 4.2, 1.62]} s={[0.22, 0.28, 0.07]} c="#1d1d1f" />
+      {/* kaki hitam kurus khas Shaun the Sheep */}
+      <Pair x={0.55} p={[0, 0.6, 0.05]} s={[0.38, 1.2, 0.4]} c={black} />
+      <Pair x={0.55} p={[0, 0.14, 0.16]} s={[0.44, 0.28, 0.58]} c={blackD} />
+      {/* kuku/hoof kaki */}
+      <Pair x={0.55} p={[0, 0.08, 0.36]} s={[0.38, 0.16, 0.18]} c={blackD} />
+
+      {/* badan wol gembul fluffy (bulat cloud, TANPA sayap!) */}
+      <B p={[0, 2.3, -0.05]} s={[2.3, 2.3, 2.3]} c={wool} />
+      {/* gumpalan wol lembut di atas, depan, belakang & bawah (tidak melebar ke samping) */}
+      <B p={[0, 3.35, -0.1]} s={[1.8, 0.55, 1.8]} c={woolD} />
+      <B p={[0, 2.3, 1.12]} s={[1.7, 1.8, 0.35]} c={woolD} />
+      <B p={[0, 2.3, -1.22]} s={[1.7, 1.8, 0.35]} c={woolD} />
+      <B p={[0, 1.25, -0.05]} s={[1.8, 0.4, 1.8]} c={woolD} />
+      {/* ekor bulat kecil wol */}
+      <B p={[0, 2.3, -1.45]} s={[0.45, 0.45, 0.4]} c={wool} />
+
+      {/* LENGAN & TANGAN HITAM PEKAT SHAUN THE SHEEP (bukan sayap!) */}
+      {/* bahu & lengan atas hitam */}
+      <Pair x={1.26} p={[0, 2.65, 0.05]} s={[0.32, 0.95, 0.32]} c={black} />
+      {/* lengan bawah hitam */}
+      <Pair x={1.26} p={[0, 1.8, 0.12]} s={[0.28, 0.85, 0.28]} c={black} />
+      {/* telapak tangan & pergelangan hitam */}
+      <Pair x={1.26} p={[0, 1.25, 0.18]} s={[0.32, 0.36, 0.36]} c={blackD} />
+      {/* jemari / kuku tangan hitam Shaun the Sheep */}
+      <Pair x={1.26} p={[0, 1.16, 0.34]} s={[0.26, 0.22, 0.16]} c={blackD} />
+
+      {/* kepala hitam pekat khas Shaun the Sheep */}
+      <B p={[0, 3.95, 0.85]} s={[1.4, 1.65, 1.45]} c={black} />
+      {/* moncong depan hitam */}
+      <B p={[0, 3.5, 1.55]} s={[1.1, 1.0, 0.45]} c={blackL} />
       {/* lubang hidung */}
-      <Pair x={0.22} p={[0, 3.6, 1.62]} s={[0.12, 0.14, 0.06]} c="#1a1715" />
-      {/* mulut */}
-      <B p={[0, 3.35, 1.61]} s={[0.5, 0.08, 0.06]} c="#1a1715" />
-      {/* jambul wol di atas kepala */}
-      <B p={[0, 4.95, 0.75]} s={[1.1, 0.6, 1.1]} c={wool} />
-      <B p={[0.3, 5.35, 0.8]} s={[0.6, 0.4, 0.6]} c={woolD} />
-      <B p={[-0.35, 5.25, 0.6]} s={[0.5, 0.35, 0.5]} c={wool} />
-      {/* telinga hitam ke samping */}
-      <Pair x={1.05} p={[0, 4.5, 0.7]} s={[0.7, 0.35, 0.4]} c={skin} />
-      <Pair x={1.35} p={[0, 4.5, 0.7]} s={[0.25, 0.28, 0.32]} c={skinL} />
+      <Pair x={0.22} p={[0, 3.58, 1.78]} s={[0.12, 0.12, 0.05]} c={blackD} />
+      {/* mulut tersenyum kecil */}
+      <B p={[0, 3.25, 1.74]} s={[0.45, 0.07, 0.05]} c={blackD} />
+
+      {/* mata putih besar + pupil hitam */}
+      <Pair x={0.44} p={[0, 4.25, 1.52]} s={[0.48, 0.58, 0.12]} c="#ffffff" />
+      <Pair x={0.36} p={[0, 4.2, 1.59]} s={[0.22, 0.28, 0.06]} c="#111113" />
+
+      {/* jambul wol fluffy di atas kepala */}
+      <B p={[0, 4.95, 0.75]} s={[1.15, 0.65, 1.15]} c={wool} />
+      <B p={[0.25, 5.35, 0.8]} s={[0.6, 0.35, 0.6]} c={woolD} />
+      <B p={[-0.25, 5.25, 0.65]} s={[0.55, 0.3, 0.55]} c={woolD} />
+
+      {/* telinga hitam panjang menjuntai ke samping khas Shaun */}
+      <Pair x={0.98} p={[0, 4.45, 0.65]} s={[0.55, 0.32, 0.35]} c={black} />
+      <Pair x={1.38} p={[0, 4.35, 0.65]} s={[0.42, 0.26, 0.28]} c={blackD} />
     </group>
   );
 }
@@ -1296,11 +1373,9 @@ export function IceCream() {
 function Rotor({
   pos,
   dir,
-  color,
 }: {
   pos: [number, number, number];
   dir: 1 | -1;
-  color: string;
 }) {
   let ref: React.RefObject<THREE.Group | null> | null = null;
   const isExtracting = typeof globalThis !== "undefined" && Boolean((globalThis as unknown as { __EXTRACTING_BUDDY_PARTS?: boolean }).__EXTRACTING_BUDDY_PARTS);
@@ -1314,46 +1389,78 @@ function Rotor({
       // Non-React execution during geometry extraction
     }
   }
+  const bladeWhite = "#FFFFFF";
+  const tipRed = "#FF3B30";
+  const silver = "#CBD5E1";
+
   return (
     <group position={pos}>
-      {/* hub motor */}
-      <B p={[0, 0, 0]} s={[0.4, 0.35, 0.4]} c="#3A3F47" />
-      {/* baling-baling berputar */}
+      {/* hub motor tower silver */}
+      <B p={[0, 0, 0]} s={[0.42, 0.35, 0.42]} c={silver} />
+      {/* baling-baling putih berputar dengan tip merah */}
       <group ref={ref} position={[0, 0.25, 0]}>
-        <B p={[0, 0, 0]} s={[2.0, 0.08, 0.3]} c={color} />
-        <B p={[0, 0, 0]} s={[0.3, 0.08, 2.0]} c={color} />
-        <B p={[0, 0.07, 0]} s={[0.25, 0.08, 0.25]} c="#8D99A6" />
+        <B p={[0, 0, 0]} s={[2.1, 0.08, 0.28]} c={bladeWhite} />
+        <B p={[0, 0, 0]} s={[0.28, 0.08, 2.1]} c={bladeWhite} />
+        {/* Safety tip merah di ujung baling-baling */}
+        <B p={[0.95, 0.005, 0]} s={[0.22, 0.082, 0.28]} c={tipRed} />
+        <B p={[-0.95, 0.005, 0]} s={[0.22, 0.082, 0.28]} c={tipRed} />
+        <B p={[0, 0.005, 0.95]} s={[0.28, 0.082, 0.22]} c={tipRed} />
+        <B p={[0, 0.005, -0.95]} s={[0.28, 0.082, 0.22]} c={tipRed} />
+        {/* Hub cap */}
+        <B p={[0, 0.07, 0]} s={[0.26, 0.08, 0.26]} c={silver} />
       </group>
     </group>
   );
 }
 
 export function Drone() {
-  const body = "#4A5568";
-  const bodyD = "#2E3640";
-  const arm = "#5C6B7E";
+  const body = "#FFFFFF";
+  const bodyUnder = "#CBD5E1";
+  const redSport = "#EF4444";
+  const redSeat = "#E63946";
+  const redSeatDark = "#B91C1C";
+  const arm = "#F1F5F9";
+  const lensHousing = "#CBD5E1";
+  const lens = "#38BDF8";
+
   return (
     <group position={[0, 2.2, 0]} scale={0.8}>
-      {/* badan tengah memanjang */}
-      <B p={[0, 0, 0]} s={[1.9, 0.7, 4.0]} c={body} />
-      <B p={[0, -0.4, 0]} s={[1.4, 0.3, 3.2]} c={bodyD} />
-      {/* punggung atas */}
-      <B p={[0, 0.4, -0.3]} s={[1.3, 0.25, 2.6]} c={arm} />
-      {/* kamera depan */}
-      <B p={[0, -0.1, 2.1]} s={[0.55, 0.45, 0.35]} c={bodyD} />
-      <B p={[0, -0.1, 2.28]} s={[0.3, 0.3, 0.1]} c="#5AC8FF" />
-      {/* lampu status belakang */}
-      <Pair x={0.55} p={[0, 0.1, -2.03]} s={[0.25, 0.2, 0.1]} c="#FF5A5A" />
-      {/* 4 lengan diagonal ke sudut */}
-      <B p={[1.1, 0.05, 1.75]} s={[1.5, 0.25, 0.4]} c={arm} r={[0, -0.785, 0]} />
-      <B p={[-1.1, 0.05, 1.75]} s={[1.5, 0.25, 0.4]} c={arm} r={[0, 0.785, 0]} />
-      <B p={[1.1, 0.05, -1.75]} s={[1.5, 0.25, 0.4]} c={arm} r={[0, 0.785, 0]} />
-      <B p={[-1.1, 0.05, -1.75]} s={[1.5, 0.25, 0.4]} c={arm} r={[0, -0.785, 0]} />
-      {/* 4 rotor di sudut, putaran selang-seling CW/CCW */}
-      <Rotor pos={[1.7, 0.3, 2.35]} dir={1} color="#D8DEE6" />
-      <Rotor pos={[-1.7, 0.3, 2.35]} dir={-1} color="#3A3F47" />
-      <Rotor pos={[1.7, 0.3, -2.35]} dir={-1} color="#3A3F47" />
-      <Rotor pos={[-1.7, 0.3, -2.35]} dir={1} color="#D8DEE6" />
+      {/* badan tengah memanjang putih aerodinamis */}
+      <B p={[0, 0, 0]} s={[1.85, 0.52, 3.8]} c={body} />
+      <B p={[0, -0.32, 0]} s={[1.4, 0.25, 3.1]} c={bodyUnder} />
+
+      {/* Strip racing merah sporty */}
+      <B p={[0, 0.28, 0]} s={[0.35, 0.04, 3.7]} c={redSport} />
+      <Pair x={0.7} p={[0, 0.12, 0]} s={[0.06, 0.16, 2.8]} c={redSport} />
+
+      {/* KURSI MERAH MINI (tempat duduk / pijakan kaki rider) */}
+      <B p={[0, 0.28, -0.1]} s={[1.15, 0.08, 1.3]} c={redSeat} />
+      <B p={[0, 0.52, -0.72]} s={[0.95, 0.42, 0.14]} c={redSeatDark} />
+      <Pair x={0.55} p={[0, 0.38, -0.15]} s={[0.08, 0.22, 1.0]} c={redSeatDark} />
+
+      {/* kamera gimbal 4K depan */}
+      <B p={[0, -0.06, 2.02]} s={[0.55, 0.4, 0.35]} c={lensHousing} />
+      <B p={[0, -0.06, 2.21]} s={[0.32, 0.28, 0.08]} c={lens} />
+
+      {/* Lampu Navigasi: Depan Hijau Neon, Belakang Merah Ruby */}
+      <Pair x={0.65} p={[0, 0.12, 1.95]} s={[0.2, 0.16, 0.1]} c="#22C55E" />
+      <Pair x={0.65} p={[0, 0.12, -1.95]} s={[0.2, 0.16, 0.1]} c="#EF4444" />
+
+      {/* 4 lengan diagonal aerodinamis putih */}
+      <B p={[1.1, 0.02, 1.7]} s={[1.5, 0.22, 0.38]} c={arm} r={[0, -0.785, 0]} />
+      <B p={[-1.1, 0.02, 1.7]} s={[1.5, 0.22, 0.38]} c={arm} r={[0, 0.785, 0]} />
+      <B p={[1.1, 0.02, -1.7]} s={[1.5, 0.22, 0.38]} c={arm} r={[0, 0.785, 0]} />
+      <B p={[-1.1, 0.02, -1.7]} s={[1.5, 0.22, 0.38]} c={arm} r={[0, -0.785, 0]} />
+
+      {/* Aksen strip merah di lengan depan */}
+      <B p={[1.1, 0.14, 1.7]} s={[0.7, 0.03, 0.24]} c={redSport} r={[0, -0.785, 0]} />
+      <B p={[-1.1, 0.14, 1.7]} s={[0.7, 0.03, 0.24]} c={redSport} r={[0, 0.785, 0]} />
+
+      {/* 4 rotor di sudut dengan putaran selang-seling CW/CCW */}
+      <Rotor pos={[1.7, 0.24, 2.3]} dir={1} />
+      <Rotor pos={[-1.7, 0.24, 2.3]} dir={-1} />
+      <Rotor pos={[1.7, 0.24, -2.3]} dir={-1} />
+      <Rotor pos={[-1.7, 0.24, -2.3]} dir={1} />
     </group>
   );
 }
@@ -1485,7 +1592,7 @@ export const SKINS: Skin[] = [
     emoji: "🐑",
     color: "#F5F2E8",
     bg: ["#D8ECC8", "#A0CC88"],
-    desc: "Domba paling pintar di peternakan! Wol fluffy, kepala hitam, penuh akal.",
+    desc: "Domba cerdas berwol fluffy dengan tangan & kepala hitam pekat asli tanpa sayap!",
     Comp: ShaunSheep,
   },
   {
@@ -1569,6 +1676,15 @@ export const SKINS: Skin[] = [
     desc: "Raja santai dengan jeruk yuzu di kepala. Chill level: maksimal. Ok I pull up.",
     Comp: Capybara,
   },
+  {
+    id: "alien",
+    name: "Alien Hijau",
+    emoji: "👽",
+    color: "#8BE32A",
+    bg: ["#3D5068", "#1E2632"],
+    desc: "Alien hijau imut berantena dengan badan, kaki & tangan lengkap serta sepatu perak antariksa!",
+    Comp: Alien,
+  },
 ];
 
 /**
@@ -1577,7 +1693,7 @@ export const SKINS: Skin[] = [
  */
 export const VOXEL_BOARDS = [
   { id: "broom", name: "Sapu Terbang", emoji: "🧹", desc: "Sapu sihir dengan percikan ajaib. Siap terbang ke sekolah sihir!", Comp: Broom },
-  { id: "ufo", name: "UFO Mini", emoji: "🛸", desc: "Piring terbang mungil dengan pilot alien hijau dan sinar traktor. Beep boop!", Comp: Ufo },
+  { id: "ufo", name: "UFO Mini", emoji: "🛸", desc: "Piring terbang mungil meluncur tanpa roda dengan dek energi dan sinar traktor. Beep boop!", Comp: Ufo },
   { id: "surfboard", name: "Papan Silver Surfer", emoji: "🏄", desc: "Papan selancar kosmik serba chrome dengan jejak energi. Power cosmic!", Comp: SurferBoard },
   { id: "carpet", name: "Karpet Terbang", emoji: "🪄", desc: "Karpet ajaib ungu-emas dari Agrabah. A whole new world menantimu!", Comp: MagicCarpet },
   { id: "kinton", name: "Awan Kinton", emoji: "☁️", desc: "Awan kuning empuk milik Goku. Hanya yang berhati murni bisa menaikinya!", Comp: KintonCloud },
@@ -1587,6 +1703,6 @@ export const VOXEL_BOARDS = [
   { id: "sushi", name: "Sushi Salmon", emoji: "🍣", desc: "Nigiri salmon segar dengan ikat nori dan wasabi. Oishii desu~!", Comp: Sushi },
   { id: "banana", name: "Pisang Kupas", emoji: "🍌", desc: "Duduk empuk di dalam pisang yang kulitnya terkupas. Potassium power!", Comp: Banana },
   { id: "icecream", name: "Es Krim Leleh", emoji: "🍦", desc: "Es krim stroberi digigit sebagian, netes-netes manis plus sprinkles!", Comp: IceCream },
-  { id: "drone", name: "Drone Quadcopter", emoji: "🚁", desc: "Drone 4 baling-baling berputar kencang dengan kursi merah mini. Siap take-off!", Comp: Drone },
+  { id: "drone", name: "Drone Quadcopter", emoji: "🚁", desc: "Drone putih sporty 4 baling-baling berputar kencang dengan kursi merah mini & lampu LED. Siap take-off!", Comp: Drone },
 ] as const;
 

@@ -1,0 +1,112 @@
+{
+  "appName": "Pigeon SK8",
+  "version": 1,
+  "description": "Data kalibrasi ukuran dan posisi nempel kaki tiap papan skateboard (15 papan)",
+  "deckAdjustments": {
+    "default": {
+      "scale": 1.0,
+      "scaleX": 1.0,
+      "scaleY": 1.0,
+      "scaleZ": 1.0,
+      "offsetY": 0.0
+    },
+    "baguette": {
+      "scale": 1.0,
+      "scaleX": 1.05,
+      "scaleY": 0.95,
+      "scaleZ": 1.0,
+      "offsetY": 0.0
+    },
+    "hoverboard": {
+      "scale": 1.0,
+      "scaleX": 1.0,
+      "scaleY": 1.0,
+      "scaleZ": 1.0,
+      "offsetY": 0.0
+    },
+    "broom": {
+      "scale": 1.0,
+      "scaleX": 1.0,
+      "scaleY": 1.0,
+      "scaleZ": 1.0,
+      "offsetY": 0.0
+    },
+    "ufo": {
+      "scale": 1.0,
+      "scaleX": 1.0,
+      "scaleY": 1.0,
+      "scaleZ": 1.0,
+      "offsetY": 0.0
+    },
+    "surfboard": {
+      "scale": 1.0,
+      "scaleX": 1.08,
+      "scaleY": 0.95,
+      "scaleZ": 1.0,
+      "offsetY": 0.0
+    },
+    "carpet": {
+      "scale": 1.0,
+      "scaleX": 1.0,
+      "scaleY": 0.9,
+      "scaleZ": 1.05,
+      "offsetY": 0.0
+    },
+    "kinton": {
+      "scale": 1.0,
+      "scaleX": 1.0,
+      "scaleY": 1.0,
+      "scaleZ": 1.0,
+      "offsetY": 0.0
+    },
+    "leaf": {
+      "scale": 1.0,
+      "scaleX": 1.05,
+      "scaleY": 0.9,
+      "scaleZ": 1.05,
+      "offsetY": 0.0
+    },
+    "sword": {
+      "scale": 1.0,
+      "scaleX": 1.1,
+      "scaleY": 0.95,
+      "scaleZ": 0.95,
+      "offsetY": 0.0
+    },
+    "pizza": {
+      "scale": 1.0,
+      "scaleX": 1.0,
+      "scaleY": 0.95,
+      "scaleZ": 1.0,
+      "offsetY": 0.0
+    },
+    "sushi": {
+      "scale": 1.0,
+      "scaleX": 1.0,
+      "scaleY": 1.0,
+      "scaleZ": 1.0,
+      "offsetY": 0.0
+    },
+    "banana": {
+      "scale": 1.0,
+      "scaleX": 1.0,
+      "scaleY": 1.0,
+      "scaleZ": 1.0,
+      "offsetY": 0.0
+    },
+    "icecream": {
+      "scale": 1.0,
+      "scaleX": 1.0,
+      "scaleY": 0.95,
+      "scaleZ": 1.0,
+      "offsetY": 0.0
+    },
+    "drone": {
+      "scale": 1.0,
+      "scaleX": 1.0,
+      "scaleY": 1.0,
+      "scaleZ": 1.0,
+      "offsetY": 0.0
+    }
+  }
+}

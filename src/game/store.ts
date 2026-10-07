@@ -20,30 +20,18 @@ export const WHEEL_COLORS: { id: WheelColor; hex: string; label: string }[] = [
   { id: "blue", hex: "#2e7de6", label: "BIRU" },
 ];
 
+import defaultDeckAdjustmentsJson from "./defaultDeckAdjustments.json";
+
 export interface DeckAdjustment {
+  scale: number; // Skala ukuran proporsional keseluruhan (default 1.0)
   scaleX: number; // Skala panjang / maju-mundur (default 1.0)
   scaleY: number; // Skala ketebalan vertikal (default 1.0)
   scaleZ: number; // Skala lebar samping (default 1.0)
   offsetY: number; // Ketinggian relatif agar mepet telapak kaki (default 0.0)
 }
 
-export const DEFAULT_DECK_ADJUSTMENTS: Record<DeckId, DeckAdjustment> = {
-  default: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.0 },
-  baguette: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.0 },
-  hoverboard: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.0 },
-  broom: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.05 }, // nempel mepet di telapak kaki
-  ufo: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.04 },
-  surfboard: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.02 },
-  carpet: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.03 },
-  kinton: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.03 },
-  leaf: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.03 },
-  sword: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.03 },
-  pizza: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.02 },
-  sushi: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.02 },
-  banana: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.03 },
-  icecream: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.02 },
-  drone: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.04 },
-};
+export const DEFAULT_DECK_ADJUSTMENTS: Record<DeckId, DeckAdjustment> =
+  defaultDeckAdjustmentsJson as Record<DeckId, DeckAdjustment>;
 
 export interface Popup {
   id: number;
@@ -130,6 +118,12 @@ interface UIState {
   setDeckAdjustment: (id: DeckId, adj: Partial<DeckAdjustment>) => void;
   resetDeckAdjustment: (id: DeckId) => void;
   resetAllDeckAdjustments: () => void;
+  applyDefaultJsonAdjustments: () => void;
+  deckAdjustOpen: boolean;
+  setDeckAdjustOpen: (open: boolean) => void;
+  adjustTargetDeck: DeckId;
+  setAdjustTargetDeck: (id: DeckId) => void;
+  importDeckAdjustments: (data: Record<string, Partial<DeckAdjustment>>) => boolean;
   deckOverride: DeckId;
   setDeckOverride: (d: DeckId) => void;
   wheelColor: WheelColor;
@@ -408,7 +402,7 @@ export const useUI = create<UIState>((set, get) => ({
   })(),
   setDeckAdjustment: (id, adj) => {
     const prev = get().deckAdjustments;
-    const current = prev[id] || DEFAULT_DECK_ADJUSTMENTS[id] || { scaleX: 1, scaleY: 1, scaleZ: 1, offsetY: 0 };
+    const current = prev[id] || DEFAULT_DECK_ADJUSTMENTS[id] || { scale: 1, scaleX: 1, scaleY: 1, scaleZ: 1, offsetY: 0 };
     const updated = {
       ...prev,
       [id]: {
@@ -423,7 +417,7 @@ export const useUI = create<UIState>((set, get) => ({
     const prev = get().deckAdjustments;
     const updated = {
       ...prev,
-      [id]: { ...(DEFAULT_DECK_ADJUSTMENTS[id] || { scaleX: 1, scaleY: 1, scaleZ: 1, offsetY: 0 }) },
+      [id]: { ...(DEFAULT_DECK_ADJUSTMENTS[id] || { scale: 1, scaleX: 1, scaleY: 1, scaleZ: 1, offsetY: 0 }) },
     };
     save("pigeon-sk8-deck-adjustments", updated);
     set({ deckAdjustments: updated });
@@ -432,6 +426,40 @@ export const useUI = create<UIState>((set, get) => ({
     const updated = { ...DEFAULT_DECK_ADJUSTMENTS };
     save("pigeon-sk8-deck-adjustments", updated);
     set({ deckAdjustments: updated });
+  },
+  applyDefaultJsonAdjustments: () => {
+    const updated = { ...DEFAULT_DECK_ADJUSTMENTS };
+    save("pigeon-sk8-deck-adjustments", updated);
+    set({ deckAdjustments: updated });
+  },
+  deckAdjustOpen: false,
+  setDeckAdjustOpen: (deckAdjustOpen) => set({ deckAdjustOpen }),
+  adjustTargetDeck: "default",
+  setAdjustTargetDeck: (adjustTargetDeck) => set({ adjustTargetDeck }),
+  importDeckAdjustments: (incoming) => {
+    if (!incoming || typeof incoming !== "object") return false;
+    const prev = get().deckAdjustments;
+    const updated = { ...prev };
+    let changed = false;
+    for (const [deckId, values] of Object.entries(incoming)) {
+      if (deckId in updated && values && typeof values === "object") {
+        updated[deckId as DeckId] = {
+          ...updated[deckId as DeckId],
+          scale: typeof values.scale === "number" && isFinite(values.scale) ? Math.max(0.4, Math.min(2.5, values.scale)) : updated[deckId as DeckId].scale,
+          scaleX: typeof values.scaleX === "number" && isFinite(values.scaleX) ? Math.max(0.4, Math.min(2.5, values.scaleX)) : updated[deckId as DeckId].scaleX,
+          scaleY: typeof values.scaleY === "number" && isFinite(values.scaleY) ? Math.max(0.4, Math.min(2.5, values.scaleY)) : updated[deckId as DeckId].scaleY,
+          scaleZ: typeof values.scaleZ === "number" && isFinite(values.scaleZ) ? Math.max(0.4, Math.min(2.5, values.scaleZ)) : updated[deckId as DeckId].scaleZ,
+          offsetY: typeof values.offsetY === "number" && isFinite(values.offsetY) ? Math.max(-0.25, Math.min(0.25, values.offsetY)) : updated[deckId as DeckId].offsetY,
+        };
+        changed = true;
+      }
+    }
+    if (changed) {
+      save("pigeon-sk8-deck-adjustments", updated);
+      set({ deckAdjustments: updated });
+      return true;
+    }
+    return false;
   },
   deckOverride: (() => {
     const d = load<string>("pigeon-sk8-deck", "default");

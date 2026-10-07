@@ -53,6 +53,9 @@ export function HUD() {
   const resetPigeonAdjust = useUI((s) => s.resetPigeonAdjust);
   const buddyScale = useUI((s) => s.buddyScale);
   const setBuddyScale = useUI((s) => s.setBuddyScale);
+  const deckOverride = useUI((s) => s.deckOverride);
+  const setDeckAdjustOpen = useUI((s) => s.setDeckAdjustOpen);
+  const setAdjustTargetDeck = useUI((s) => s.setAdjustTargetDeck);
   const inRun = phase === "playing" || phase === "crashed";
   const nosReady = nos >= NOS_MAX * 0.99 && !nosActive;
   const sprint = useUI((s) => s.sprint);
@@ -175,6 +178,21 @@ export function HUD() {
                 title="Atur Ukuran & Letak Tubuh Pigeon"
               >
                 🐦
+              </button>
+              <button
+                type="button"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={() => {
+                  unlockAudio();
+                  sfx.click();
+                  setAdjustTargetDeck(deckOverride);
+                  setDeckAdjustOpen(true);
+                }}
+                className="flex h-[10cqw] w-[10cqw] min-h-[38px] min-w-[38px] items-center justify-center rounded-full border-2 border-white/20 bg-[#2ec4b6] text-[4.6cqw] text-white shadow-[0_3px_0_#1f9a8f] active:translate-y-[2px] active:shadow-none"
+                aria-label="Atur ukuran papan & export"
+                title="Atur Ukuran Papan Skateboard & Export"
+              >
+                🛹
               </button>
             </>
           )}

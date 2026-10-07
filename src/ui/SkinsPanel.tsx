@@ -191,7 +191,17 @@ function DeckPreview3D({ deck }: { deck: DeckOption }) {
   );
 }
 
-function DeckCard({ deck, active, onSelect }: { deck: DeckOption; active: boolean; onSelect: () => void }) {
+function DeckCard({
+  deck,
+  active,
+  onSelect,
+  onAdjust,
+}: {
+  deck: DeckOption;
+  active: boolean;
+  onSelect: () => void;
+  onAdjust: () => void;
+}) {
   const isBaguette = deck.id === "baguette";
   return (
     <div
@@ -226,20 +236,33 @@ function DeckCard({ deck, active, onSelect }: { deck: DeckOption; active: boolea
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onSelect();
-        }}
-        className={`mt-3 w-full rounded-xl py-2 font-display text-[3.2cqw] leading-none transition-all ${
-          active
-            ? "bg-[#2ec4b6] text-white shadow-[0_3px_0_#1f9a8f]"
-            : "bg-[#ffd60a] text-[#1f2430] shadow-[0_3px_0_#c9a400] active:translate-y-[2px] active:shadow-none"
-        }`}
-      >
-        {active ? "DIPAKAI ✓" : "PAKAI PAPAN INI"}
-      </button>
+      <div className="mt-2.5 flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect();
+          }}
+          className={`flex-1 rounded-xl py-2 font-display text-[3.1cqw] leading-none transition-all ${
+            active
+              ? "bg-[#2ec4b6] text-white shadow-[0_3px_0_#1f9a8f]"
+              : "bg-[#ffd60a] text-[#1f2430] shadow-[0_3px_0_#c9a400] active:translate-y-[2px] active:shadow-none"
+          }`}
+        >
+          {active ? "DIPAKAI ✓" : "PAKAI"}
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onAdjust();
+          }}
+          className="rounded-xl border border-black/15 bg-slate-100 px-2.5 py-2 font-display text-[2.6cqw] font-black text-slate-800 shadow-[0_2px_0_rgba(0,0,0,0.08)] transition hover:bg-white active:scale-95"
+          title="Atur ukuran dan posisi nempel kaki papan ini"
+        >
+          📏 ATUR
+        </button>
+      </div>
     </div>
   );
 }
@@ -258,6 +281,8 @@ export function SkinsPanel() {
   const setPreview = useUI((s) => s.setPreview);
   const deckOverride = useUI((s) => s.deckOverride);
   const setDeckOverride = useUI((s) => s.setDeckOverride);
+  const setDeckAdjustOpen = useUI((s) => s.setDeckAdjustOpen);
+  const setAdjustTargetDeck = useUI((s) => s.setAdjustTargetDeck);
   const addPopup = useUI((s) => s.addPopup);
   const buddyScale = useUI((s) => s.buddyScale);
   const setBuddyScale = useUI((s) => s.setBuddyScale);
@@ -527,6 +552,34 @@ export function SkinsPanel() {
           </>
         ) : (
           <div className="flex flex-1 flex-col overflow-y-auto px-4 pb-4" style={{ touchAction: "pan-y" }}>
+            {/* Banner: Atur Ukuran Papan & Export Data */}
+            <button
+              type="button"
+              onClick={() => {
+                sfx.click();
+                setAdjustTargetDeck(deckOverride);
+                setDeckAdjustOpen(true);
+              }}
+              className="mb-3 flex items-center justify-between rounded-2xl bg-gradient-to-r from-[#2ec4b6] via-[#0ea5e9] to-[#3b82f6] p-3 text-white shadow-[0_4px_12px_rgba(46,196,182,0.35)] transition-all hover:brightness-105 active:scale-[0.98]"
+            >
+              <div className="flex items-center gap-2.5 text-left">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/20 text-lg shadow-sm">
+                  🛠️
+                </span>
+                <div>
+                  <div className="font-display text-[3.1cqw] leading-tight text-white">
+                    ADJUST UKURAN PAPAN & EXPORT
+                  </div>
+                  <div className="font-body text-[2.4cqw] font-bold text-white/90">
+                    Atur panjang, lebar, tebal & pastikan mepet di kaki
+                  </div>
+                </div>
+              </div>
+              <span className="shrink-0 rounded-xl bg-white/25 px-2.5 py-1.5 font-display text-[2.5cqw] font-black text-white">
+                BUKA ⚙️
+              </span>
+            </button>
+
             <div className="mb-2 text-center font-body text-[2.8cqw] font-bold text-[#6b7280]">
               Pilih papan skateboard yang ingin kamu pakai untuk berseluncur di jalanan Tokyo!
             </div>
@@ -537,6 +590,11 @@ export function SkinsPanel() {
                   deck={d}
                   active={deckOverride === d.id}
                   onSelect={() => selectDeck(d.id)}
+                  onAdjust={() => {
+                    sfx.click();
+                    setAdjustTargetDeck(d.id);
+                    setDeckAdjustOpen(true);
+                  }}
                 />
               ))}
             </div>

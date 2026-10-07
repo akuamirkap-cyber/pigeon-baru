@@ -86,8 +86,8 @@ export const DECKS: DeckOption[] = [
   {
     id: "ufo",
     name: "UFO Mini",
-    tagline: "Piring terbang mungil dengan pilot alien hijau dan sinar traktor",
-    badge: "VOXEL BOARD",
+    tagline: "Piring terbang futuristik melayang tanpa roda dengan dek energi & sinar traktor",
+    badge: "SKATE TANPA RODA",
     emoji: "🛸",
     cost: 0,
   },
@@ -166,8 +166,8 @@ export const DECKS: DeckOption[] = [
   {
     id: "drone",
     name: "Drone Quadcopter",
-    tagline: "Drone 4 baling-baling berputar kencang, siap take-off",
-    badge: "VOXEL BOARD",
+    tagline: "Drone putih sporty dengan 4 baling-baling berputar kencang, kursi merah mini & lampu LED",
+    badge: "SPORT DRONE",
     emoji: "🚁",
     cost: 0,
   },
@@ -271,7 +271,7 @@ export const SKINS: Skin[] = [
 ];
 
 export function getSkin(id: string): Skin {
-  return SKINS.find((s) => s.id === id) ?? SKINS[0];
+  return SKINS.find((s) => s.id === id || s.buddyId === id) ?? SKINS[0];
 }
 
 /* ---------- Dispatcher model per spesies (merpati / kucing / flamingo / gagak) ---------- */

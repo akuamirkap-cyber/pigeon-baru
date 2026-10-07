@@ -6,6 +6,7 @@ import { Menu } from "./ui/Menu";
 import { GameOver } from "./ui/GameOver";
 import { MysteryBoxModal } from "./ui/MysteryBoxModal";
 import { Tutorial } from "./ui/Tutorial";
+import { DeckAdjustModal } from "./ui/DeckAdjustModal";
 import { suspendAudioForHiddenPage, resumeAudioFromHiddenPage } from "./game/audio";
 import { engine, track } from "./game/engine";
 import { useUI } from "./game/store";
@@ -200,6 +201,7 @@ export default function App() {
             <GameOver />
             <MysteryBoxModal />
             <Tutorial />
+            <DeckAdjustModal />
           </div>
           {!stage.fullscreen && (
             <div className="mt-5 font-body text-sm font-bold tracking-wide text-white/50">

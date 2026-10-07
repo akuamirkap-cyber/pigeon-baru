@@ -51,7 +51,29 @@ function pushTarget(u: number, out: K): number {
   return u > 0.2 && u < 0.66 ? Math.sin(Math.PI * ((u - 0.2) / 0.46)) : 0;
 }
 
-/** Papan Drone Quadcopter dengan 4 baling-baling aktif berputar & animasi hovering */
+/**
+ * Ketinggian referensi permukaan atas papan (relatif terhadap pusat board space)
+ * agar permukaan atas selalu MEPET / NEMPEL presisi di telapak kaki (RIG.pigeonY = 0.25).
+ */
+export const DECK_SURFACE_TOP: Record<string, number> = {
+  default: 0.06,
+  baguette: 0.10,
+  hoverboard: 0.097,
+  broom: 0.05,
+  ufo: 0.05,
+  surfboard: 0.05,
+  carpet: 0.05,
+  kinton: 0.05,
+  leaf: 0.05,
+  sword: 0.05,
+  pizza: 0.05,
+  sushi: 0.05,
+  banana: 0.05,
+  icecream: 0.05,
+  drone: 0.05,
+};
+
+/** Papan Drone Quadcopter putih sporty dengan 4 baling-baling berputar kencang, kursi merah mini & lampu LED menyala */
 function AnimatedDroneDeck() {
   const r0 = useRef<THREE.Group>(null);
   const r1 = useRef<THREE.Group>(null);
@@ -66,80 +88,282 @@ function AnimatedDroneDeck() {
     if (r3.current) r3.current.rotation.y += dt * spd;
   });
 
+  const whiteBody = "#FFFFFF";
+  const whiteTrim = "#F1F5F9";
+  const silverD = "#CBD5E1";
+  const redSport = "#EF4444";
+  const redSeat = "#E63946";
+  const redSeatDark = "#B91C1C";
+  const tipRed = "#FF3B30";
+
   return (
-    <group rotation-y={Math.PI / 2} scale={0.46} position={[0, 0.048, 0]}>
-      {/* central body */}
-      <mesh position={[0, 0, 0]} material={voxelMaterial} castShadow>
-        <boxGeometry args={[1.9, 0.7, 4.0]} />
+    <group rotation-y={Math.PI / 2} scale={0.46} position={[0, -0.065, 0]}>
+      {/* Central fuselage / bodi utama drone putih bersih aerodinamis */}
+      <mesh position={[0, 0, 0]} castShadow receiveShadow>
+        <boxGeometry args={[1.85, 0.5, 3.8]} />
+        <meshStandardMaterial color={whiteBody} roughness={0.25} metalness={0.08} />
       </mesh>
-      <mesh position={[0, -0.4, 0]} material={voxelMaterial}>
-        <boxGeometry args={[1.4, 0.3, 3.2]} />
+      {/* Cangkang bawah drone (silver-white) */}
+      <mesh position={[0, -0.28, 0]} receiveShadow>
+        <boxGeometry args={[1.4, 0.24, 3.1]} />
+        <meshStandardMaterial color={silverD} roughness={0.3} metalness={0.12} />
       </mesh>
-      {/* top spine */}
-      <mesh position={[0, 0.4, -0.3]} material={voxelMaterial}>
-        <boxGeometry args={[1.3, 0.25, 2.6]} />
+      {/* Strip racing merah sporty di sepanjang bodi */}
+      <mesh position={[0, 0.26, 0]}>
+        <boxGeometry args={[0.35, 0.04, 3.7]} />
+        <meshStandardMaterial color={redSport} roughness={0.2} />
       </mesh>
-      {/* front camera */}
-      <mesh position={[0, -0.1, 2.1]} material={voxelMaterial}>
-        <boxGeometry args={[0.55, 0.45, 0.35]} />
+      <mesh position={[0.7, 0.12, 0]}>
+        <boxGeometry args={[0.06, 0.16, 2.8]} />
+        <meshStandardMaterial color={redSport} roughness={0.2} />
       </mesh>
-      <mesh position={[0, -0.1, 2.28]}>
-        <boxGeometry args={[0.3, 0.3, 0.1]} />
-        <meshBasicMaterial color="#5AC8FF" />
+      <mesh position={[-0.7, 0.12, 0]}>
+        <boxGeometry args={[0.06, 0.16, 2.8]} />
+        <meshStandardMaterial color={redSport} roughness={0.2} />
       </mesh>
-      {/* rear status lights */}
-      <mesh position={[0.55, 0.1, -2.03]}>
-        <boxGeometry args={[0.25, 0.2, 0.1]} />
-        <meshBasicMaterial color="#FF5A5A" />
+
+      {/* KURSI MERAH MINI (tempat duduk / pijakan kaki rider) */}
+      <mesh position={[0, 0.25, -0.1]} castShadow>
+        <boxGeometry args={[1.15, 0.08, 1.3]} />
+        <meshStandardMaterial color={redSeat} roughness={0.4} />
       </mesh>
-      <mesh position={[-0.55, 0.1, -2.03]}>
-        <boxGeometry args={[0.25, 0.2, 0.1]} />
-        <meshBasicMaterial color="#FF5A5A" />
+      {/* Sandaran kursi merah mini */}
+      <mesh position={[0, 0.48, -0.72]} castShadow>
+        <boxGeometry args={[0.95, 0.42, 0.14]} />
+        <meshStandardMaterial color={redSeatDark} roughness={0.4} />
       </mesh>
-      {/* 4 diagonal arms */}
-      <mesh position={[1.1, 0.05, 1.75]} rotation-y={-0.785} material={voxelMaterial} castShadow>
-        <boxGeometry args={[1.5, 0.25, 0.4]} />
+      {/* Pelindung sisi kursi */}
+      <mesh position={[0.55, 0.35, -0.15]}>
+        <boxGeometry args={[0.08, 0.22, 1.0]} />
+        <meshStandardMaterial color={redSeatDark} roughness={0.4} />
       </mesh>
-      <mesh position={[-1.1, 0.05, 1.75]} rotation-y={0.785} material={voxelMaterial} castShadow>
-        <boxGeometry args={[1.5, 0.25, 0.4]} />
+      <mesh position={[-0.55, 0.35, -0.15]}>
+        <boxGeometry args={[0.08, 0.22, 1.0]} />
+        <meshStandardMaterial color={redSeatDark} roughness={0.4} />
       </mesh>
-      <mesh position={[1.1, 0.05, -1.75]} rotation-y={0.785} material={voxelMaterial} castShadow>
-        <boxGeometry args={[1.5, 0.25, 0.4]} />
+
+      {/* Kamera gimbal 4K di hidung depan */}
+      <mesh position={[0, -0.06, 2.02]} castShadow>
+        <boxGeometry args={[0.55, 0.4, 0.35]} />
+        <meshStandardMaterial color={silverD} roughness={0.3} metalness={0.2} />
       </mesh>
-      <mesh position={[-1.1, 0.05, -1.75]} rotation-y={-0.785} material={voxelMaterial} castShadow>
-        <boxGeometry args={[1.5, 0.25, 0.4]} />
+      <mesh position={[0, -0.06, 2.21]}>
+        <boxGeometry args={[0.32, 0.28, 0.08]} />
+        <meshStandardMaterial
+          color="#38BDF8"
+          emissive="#38BDF8"
+          emissiveIntensity={0.8}
+          roughness={0.1}
+        />
       </mesh>
-      {/* 4 rotors with spinning propellers */}
-      <group position={[1.7, 0.3, 2.35]}>
-        <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[0.4, 0.35, 0.4]} /></mesh>
-        <group ref={r0} position={[0, 0.25, 0]}>
-          <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[2.0, 0.08, 0.3]} /></mesh>
-          <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[0.3, 0.08, 2.0]} /></mesh>
-          <mesh position={[0, 0.07, 0]} material={voxelMaterial}><boxGeometry args={[0.25, 0.08, 0.25]} /></mesh>
+
+      {/* Lampu Navigasi Depan (Hijau Neon Menyala) */}
+      <mesh position={[0.65, 0.12, 1.95]}>
+        <boxGeometry args={[0.2, 0.16, 0.1]} />
+        <meshStandardMaterial color="#22C55E" emissive="#22C55E" emissiveIntensity={1.2} />
+      </mesh>
+      <mesh position={[-0.65, 0.12, 1.95]}>
+        <boxGeometry args={[0.2, 0.16, 0.1]} />
+        <meshStandardMaterial color="#22C55E" emissive="#22C55E" emissiveIntensity={1.2} />
+      </mesh>
+
+      {/* Lampu Navigasi Belakang (Merah Ruby Menyala) */}
+      <mesh position={[0.65, 0.12, -1.95]}>
+        <boxGeometry args={[0.2, 0.16, 0.1]} />
+        <meshStandardMaterial color="#EF4444" emissive="#EF4444" emissiveIntensity={1.2} />
+      </mesh>
+      <mesh position={[-0.65, 0.12, -1.95]}>
+        <boxGeometry args={[0.2, 0.16, 0.1]} />
+        <meshStandardMaterial color="#EF4444" emissive="#EF4444" emissiveIntensity={1.2} />
+      </mesh>
+
+      {/* Strobe anti-tabrakan di bagian bawah */}
+      <mesh position={[0, -0.42, 0]}>
+        <boxGeometry args={[0.3, 0.08, 0.3]} />
+        <meshStandardMaterial color="#06B6D4" emissive="#06B6D4" emissiveIntensity={0.9} />
+      </mesh>
+
+      {/* 4 Lengan diagonal aerodinamis putih */}
+      <mesh position={[1.1, 0.02, 1.7]} rotation-y={-0.785} castShadow>
+        <boxGeometry args={[1.5, 0.22, 0.38]} />
+        <meshStandardMaterial color={whiteTrim} roughness={0.3} />
+      </mesh>
+      <mesh position={[-1.1, 0.02, 1.7]} rotation-y={0.785} castShadow>
+        <boxGeometry args={[1.5, 0.22, 0.38]} />
+        <meshStandardMaterial color={whiteTrim} roughness={0.3} />
+      </mesh>
+      <mesh position={[1.1, 0.02, -1.7]} rotation-y={0.785} castShadow>
+        <boxGeometry args={[1.5, 0.22, 0.38]} />
+        <meshStandardMaterial color={whiteTrim} roughness={0.3} />
+      </mesh>
+      <mesh position={[-1.1, 0.02, -1.7]} rotation-y={-0.785} castShadow>
+        <boxGeometry args={[1.5, 0.22, 0.38]} />
+        <meshStandardMaterial color={whiteTrim} roughness={0.3} />
+      </mesh>
+
+      {/* Strip merah sporty di lengan depan */}
+      <mesh position={[1.1, 0.14, 1.7]} rotation-y={-0.785}>
+        <boxGeometry args={[0.7, 0.03, 0.24]} />
+        <meshStandardMaterial color={redSport} />
+      </mesh>
+      <mesh position={[-1.1, 0.14, 1.7]} rotation-y={0.785}>
+        <boxGeometry args={[0.7, 0.03, 0.24]} />
+        <meshStandardMaterial color={redSport} />
+      </mesh>
+
+      {/* 4 Rotor & Baling-Baling Terang (Putih dengan Tip Merah) */}
+      {/* Rotor 0: Depan Kanan */}
+      <group position={[1.7, 0.22, 2.3]}>
+        <mesh position={[0, 0, 0]} castShadow>
+          <boxGeometry args={[0.42, 0.35, 0.42]} />
+          <meshStandardMaterial color={silverD} metalness={0.2} roughness={0.3} />
+        </mesh>
+        <group ref={r0} position={[0, 0.24, 0]}>
+          <mesh castShadow>
+            <boxGeometry args={[2.1, 0.07, 0.28]} />
+            <meshStandardMaterial color={whiteBody} roughness={0.2} />
+          </mesh>
+          <mesh castShadow>
+            <boxGeometry args={[0.28, 0.07, 2.1]} />
+            <meshStandardMaterial color={whiteBody} roughness={0.2} />
+          </mesh>
+          {/* Tip baling-baling merah terang */}
+          <mesh position={[0.95, 0.005, 0]}>
+            <boxGeometry args={[0.22, 0.075, 0.28]} />
+            <meshStandardMaterial color={tipRed} />
+          </mesh>
+          <mesh position={[-0.95, 0.005, 0]}>
+            <boxGeometry args={[0.22, 0.075, 0.28]} />
+            <meshStandardMaterial color={tipRed} />
+          </mesh>
+          <mesh position={[0, 0.005, 0.95]}>
+            <boxGeometry args={[0.28, 0.075, 0.22]} />
+            <meshStandardMaterial color={tipRed} />
+          </mesh>
+          <mesh position={[0, 0.005, -0.95]}>
+            <boxGeometry args={[0.28, 0.075, 0.22]} />
+            <meshStandardMaterial color={tipRed} />
+          </mesh>
+          {/* Hub cap perak */}
+          <mesh position={[0, 0.06, 0]}>
+            <boxGeometry args={[0.26, 0.08, 0.26]} />
+            <meshStandardMaterial color={silverD} metalness={0.3} />
+          </mesh>
         </group>
       </group>
-      <group position={[-1.7, 0.3, 2.35]}>
-        <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[0.4, 0.35, 0.4]} /></mesh>
-        <group ref={r1} position={[0, 0.25, 0]}>
-          <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[2.0, 0.08, 0.3]} /></mesh>
-          <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[0.3, 0.08, 2.0]} /></mesh>
-          <mesh position={[0, 0.07, 0]} material={voxelMaterial}><boxGeometry args={[0.25, 0.08, 0.25]} /></mesh>
+
+      {/* Rotor 1: Depan Kiri */}
+      <group position={[-1.7, 0.22, 2.3]}>
+        <mesh position={[0, 0, 0]} castShadow>
+          <boxGeometry args={[0.42, 0.35, 0.42]} />
+          <meshStandardMaterial color={silverD} metalness={0.2} roughness={0.3} />
+        </mesh>
+        <group ref={r1} position={[0, 0.24, 0]}>
+          <mesh castShadow>
+            <boxGeometry args={[2.1, 0.07, 0.28]} />
+            <meshStandardMaterial color={whiteBody} roughness={0.2} />
+          </mesh>
+          <mesh castShadow>
+            <boxGeometry args={[0.28, 0.07, 2.1]} />
+            <meshStandardMaterial color={whiteBody} roughness={0.2} />
+          </mesh>
+          {/* Tip baling-baling merah terang */}
+          <mesh position={[0.95, 0.005, 0]}>
+            <boxGeometry args={[0.22, 0.075, 0.28]} />
+            <meshStandardMaterial color={tipRed} />
+          </mesh>
+          <mesh position={[-0.95, 0.005, 0]}>
+            <boxGeometry args={[0.22, 0.075, 0.28]} />
+            <meshStandardMaterial color={tipRed} />
+          </mesh>
+          <mesh position={[0, 0.005, 0.95]}>
+            <boxGeometry args={[0.28, 0.075, 0.22]} />
+            <meshStandardMaterial color={tipRed} />
+          </mesh>
+          <mesh position={[0, 0.005, -0.95]}>
+            <boxGeometry args={[0.28, 0.075, 0.22]} />
+            <meshStandardMaterial color={tipRed} />
+          </mesh>
+          <mesh position={[0, 0.06, 0]}>
+            <boxGeometry args={[0.26, 0.08, 0.26]} />
+            <meshStandardMaterial color={silverD} metalness={0.3} />
+          </mesh>
         </group>
       </group>
-      <group position={[1.7, 0.3, -2.35]}>
-        <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[0.4, 0.35, 0.4]} /></mesh>
-        <group ref={r2} position={[0, 0.25, 0]}>
-          <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[2.0, 0.08, 0.3]} /></mesh>
-          <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[0.3, 0.08, 2.0]} /></mesh>
-          <mesh position={[0, 0.07, 0]} material={voxelMaterial}><boxGeometry args={[0.25, 0.08, 0.25]} /></mesh>
+
+      {/* Rotor 2: Belakang Kanan */}
+      <group position={[1.7, 0.22, -2.3]}>
+        <mesh position={[0, 0, 0]} castShadow>
+          <boxGeometry args={[0.42, 0.35, 0.42]} />
+          <meshStandardMaterial color={silverD} metalness={0.2} roughness={0.3} />
+        </mesh>
+        <group ref={r2} position={[0, 0.24, 0]}>
+          <mesh castShadow>
+            <boxGeometry args={[2.1, 0.07, 0.28]} />
+            <meshStandardMaterial color={whiteBody} roughness={0.2} />
+          </mesh>
+          <mesh castShadow>
+            <boxGeometry args={[0.28, 0.07, 2.1]} />
+            <meshStandardMaterial color={whiteBody} roughness={0.2} />
+          </mesh>
+          <mesh position={[0.95, 0.005, 0]}>
+            <boxGeometry args={[0.22, 0.075, 0.28]} />
+            <meshStandardMaterial color={tipRed} />
+          </mesh>
+          <mesh position={[-0.95, 0.005, 0]}>
+            <boxGeometry args={[0.22, 0.075, 0.28]} />
+            <meshStandardMaterial color={tipRed} />
+          </mesh>
+          <mesh position={[0, 0.005, 0.95]}>
+            <boxGeometry args={[0.28, 0.075, 0.22]} />
+            <meshStandardMaterial color={tipRed} />
+          </mesh>
+          <mesh position={[0, 0.005, -0.95]}>
+            <boxGeometry args={[0.28, 0.075, 0.22]} />
+            <meshStandardMaterial color={tipRed} />
+          </mesh>
+          <mesh position={[0, 0.06, 0]}>
+            <boxGeometry args={[0.26, 0.08, 0.26]} />
+            <meshStandardMaterial color={silverD} metalness={0.3} />
+          </mesh>
         </group>
       </group>
-      <group position={[-1.7, 0.3, -2.35]}>
-        <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[0.4, 0.35, 0.4]} /></mesh>
-        <group ref={r3} position={[0, 0.25, 0]}>
-          <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[2.0, 0.08, 0.3]} /></mesh>
-          <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[0.3, 0.08, 2.0]} /></mesh>
-          <mesh position={[0, 0.07, 0]} material={voxelMaterial}><boxGeometry args={[0.25, 0.08, 0.25]} /></mesh>
+
+      {/* Rotor 3: Belakang Kiri */}
+      <group position={[-1.7, 0.22, -2.3]}>
+        <mesh position={[0, 0, 0]} castShadow>
+          <boxGeometry args={[0.42, 0.35, 0.42]} />
+          <meshStandardMaterial color={silverD} metalness={0.2} roughness={0.3} />
+        </mesh>
+        <group ref={r3} position={[0, 0.24, 0]}>
+          <mesh castShadow>
+            <boxGeometry args={[2.1, 0.07, 0.28]} />
+            <meshStandardMaterial color={whiteBody} roughness={0.2} />
+          </mesh>
+          <mesh castShadow>
+            <boxGeometry args={[0.28, 0.07, 2.1]} />
+            <meshStandardMaterial color={whiteBody} roughness={0.2} />
+          </mesh>
+          <mesh position={[0.95, 0.005, 0]}>
+            <boxGeometry args={[0.22, 0.075, 0.28]} />
+            <meshStandardMaterial color={tipRed} />
+          </mesh>
+          <mesh position={[-0.95, 0.005, 0]}>
+            <boxGeometry args={[0.22, 0.075, 0.28]} />
+            <meshStandardMaterial color={tipRed} />
+          </mesh>
+          <mesh position={[0, 0.005, 0.95]}>
+            <boxGeometry args={[0.28, 0.075, 0.22]} />
+            <meshStandardMaterial color={tipRed} />
+          </mesh>
+          <mesh position={[0, 0.005, -0.95]}>
+            <boxGeometry args={[0.28, 0.075, 0.22]} />
+            <meshStandardMaterial color={tipRed} />
+          </mesh>
+          <mesh position={[0, 0.06, 0]}>
+            <boxGeometry args={[0.26, 0.08, 0.26]} />
+            <meshStandardMaterial color={silverD} metalness={0.3} />
+          </mesh>
         </group>
       </group>
     </group>
@@ -151,7 +375,10 @@ export function Player() {
   const skinId = useUI((s) => (s.phase === "menu" ? s.preview : s.skin));
   const deckOverride = useUI((s) => s.deckOverride);
   const deckAdjustments = useUI((s) => s.deckAdjustments);
-  const deckAdj = (deckAdjustments && deckAdjustments[deckOverride]) || { scaleX: 1, scaleY: 1, scaleZ: 1, offsetY: 0 };
+  const deckAdj = (deckAdjustments && deckAdjustments[deckOverride]) || { scale: 1, scaleX: 1, scaleY: 1, scaleZ: 1, offsetY: 0 };
+  const effScaleX = (deckAdj.scale ?? 1) * (deckAdj.scaleX ?? 1);
+  const effScaleY = (deckAdj.scale ?? 1) * (deckAdj.scaleY ?? 1);
+  const effScaleZ = (deckAdj.scale ?? 1) * (deckAdj.scaleZ ?? 1);
   const isFloatingDeck = deckOverride === "hoverboard" || VOXEL_BOARD_IDS.has(deckOverride);
   const wheellessDeck = isFloatingDeck;
   const broomDeck = deckOverride === "broom";
@@ -354,8 +581,12 @@ export function Player() {
       const grabTuck = g < 0 ? -g * 0.18 : 0;
       // Floating boards ride higher (+40% higher from surface as requested: 0.155 * 1.4 = ~0.22)
       const floatLift = isFloatingDeck ? 0.22 + Math.sin(t * 4.5) * 0.038 : 0;
-      bd.position.set(g > 0 ? -g * 0.2 : 0, RIG.boardY + grabLift + grabTuck + floatLift + (deckAdj.offsetY || 0), 0);
-      bd.scale.set(deckAdj.scaleX || 1, deckAdj.scaleY || 1, deckAdj.scaleZ || 1);
+      const deckSurfaceTop = DECK_SURFACE_TOP[deckOverride] ?? 0.06;
+      // Formula mepet presisi: permukaan atas papan (boardY + deckSurfaceTop * effScaleY)
+      // selalu menempel persis di telapak kaki (RIG.pigeonY = 0.25).
+      const flushBoardY = RIG.pigeonY - deckSurfaceTop * effScaleY;
+      bd.position.set(g > 0 ? -g * 0.2 : 0, flushBoardY + grabLift + grabTuck + floatLift + (deckAdj.offsetY || 0), 0);
+      bd.scale.set(effScaleX, effScaleY, effScaleZ);
       // board yaws into the carve (nose points where the pigeon is going) on top of any trick rotation
       // NEW: in the air the feet steer the board, so it tilts a little MORE than the body (lean * 0.2)
       const airTilt = nm ? lv * 0.2 * p.airBlend : 0;

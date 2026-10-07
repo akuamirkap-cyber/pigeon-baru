@@ -289,6 +289,9 @@ function MainMenu() {
 
   const setPreview = useUI((s) => s.setPreview);
   const equippedId = useUI((s) => s.skin);
+  const deck = useUI((s) => s.deckOverride);
+  const setDeckAdjustOpen = useUI((s) => s.setDeckAdjustOpen);
+  const setAdjustTargetDeck = useUI((s) => s.setAdjustTargetDeck);
   const wordHunt = useUI((s) => s.wordHunt);
   const setShowMysteryBox = useUI((s) => s.setShowMysteryBox);
 
@@ -522,6 +525,20 @@ function MainMenu() {
             >
               <span>🏙️</span>
               <span>PINDAH KE MODE KOTA SHIBUYA</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowSettings(false);
+                unlockAudio();
+                sfx.click();
+                setAdjustTargetDeck(deck);
+                setDeckAdjustOpen(true);
+              }}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#ffd21f] to-[#ff9f1c] py-2.5 font-display text-[3.4cqw] text-[#151823] shadow-[0_4px_0_#d5a92e] active:translate-y-[2px]"
+            >
+              <span>🛹</span>
+              <span>ADJUST UKURAN PAPAN & EXPORT</span>
             </button>
             <div className="mt-2 flex gap-2">
               <button
