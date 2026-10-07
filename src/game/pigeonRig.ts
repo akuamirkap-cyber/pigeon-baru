@@ -1,9 +1,9 @@
 import * as THREE from "three";
 import { buildVoxelGeometry, clamp, voxelMaterial, type Part } from "./voxel";
 import { getShibuyaAnimalGeo, getShibuyaAnimalPlayerScale } from "./shibuyaPacks";
-import { getBuddyGeometry } from "./buddiesSkins";
+import { getBuddyGeometry, getBuddyScaleFactor, VOXEL_BOARD_IDS } from "./buddiesSkins";
 import { useUI } from "./store";
-import { charBodyParts, charHeadParts, charLegParts, charTailParts, charWingParts, deckParts, truckParts, wheelParts, HIP_Y, LEG_Z, TAIL_ROOT, type Skin } from "./skins";
+import { charBodyParts, charHeadParts, charLegParts, charTailParts, charWingParts, deckParts, truckParts, wheelParts, HIP_Y, LEG_Z, TAIL_ROOT, type Skin, type DeckId } from "./skins";
 
 /** Shared placement constants for the pigeon-on-board rig (used by the Player and the 3D thumbnails). */
 export const RIG = {
@@ -118,7 +118,7 @@ export class LegRig {
 /** Plain three.js assembly of a skin (static riding pose). */
 export function buildPigeonGroup(
   skin: Skin,
-  deckOverride: "default" | "baguette" | "hoverboard" | "broom" | "silver" | "ufo" = "default",
+  deckOverride: DeckId = "default",
   wheelColor: string = "auto",
 ): { group: THREE.Group; dispose: () => void } {
   const geos = [
@@ -137,24 +137,31 @@ export function buildPigeonGroup(
   scaled.scale.setScalar(RIG.rootScale);
   group.add(scaled);
 
+  const isWheelless = deckOverride === "hoverboard" || VOXEL_BOARD_IDS.has(deckOverride);
+  const deckAdj = useUI.getState?.().deckAdjustments?.[deckOverride] || { scaleX: 1, scaleY: 1, scaleZ: 1, offsetY: 0 };
+  const floatClearance = isWheelless ? 0.22 : 0;
+
   const board = new THREE.Group();
-  board.position.y = RIG.boardY;
+  board.position.y = RIG.boardY + floatClearance + (deckAdj.offsetY || 0);
+  board.scale.set(deckAdj.scaleX || 1, deckAdj.scaleY || 1, deckAdj.scaleZ || 1);
   board.add(new THREE.Mesh(deck, voxelMaterial));
-  for (const sx of [1, -1]) {
-    const tr = new THREE.Group();
-    tr.position.set(sx * RIG.truckX, RIG.truckY, 0);
-    tr.add(new THREE.Mesh(truck, voxelMaterial));
-    for (const z of [RIG.wheelZ, -RIG.wheelZ]) {
-      const m = new THREE.Mesh(wheel, voxelMaterial);
-      m.position.set(0, RIG.wheelDrop, z);
-      tr.add(m);
+  if (!isWheelless) {
+    for (const sx of [1, -1]) {
+      const tr = new THREE.Group();
+      tr.position.set(sx * RIG.truckX, RIG.truckY, 0);
+      tr.add(new THREE.Mesh(truck, voxelMaterial));
+      for (const z of [RIG.wheelZ, -RIG.wheelZ]) {
+        const m = new THREE.Mesh(wheel, voxelMaterial);
+        m.position.set(0, RIG.wheelDrop, z);
+        tr.add(m);
+      }
+      board.add(tr);
     }
-    board.add(tr);
   }
   scaled.add(board);
 
   const pigeon = new THREE.Group();
-  pigeon.position.y = RIG.pigeonY;
+  pigeon.position.y = RIG.pigeonY + floatClearance;
   pigeon.scale.setScalar(RIG.pigeonScale);
   const legs: LegRig[] = [];
   if (skin.kind === "littleJapanFriend" && skin.friend) {
@@ -168,7 +175,8 @@ export function buildPigeonGroup(
     const buddy = new THREE.Mesh(buddyGeo, voxelMaterial);
     buddy.rotation.y = Math.PI / 2;
     const bs = useUI.getState?.().buddyScale || 1.0;
-    buddy.scale.setScalar(0.24 * bs);
+    const sf = getBuddyScaleFactor(skin.buddyId);
+    buddy.scale.setScalar(0.24 * sf * bs);
     pigeon.add(buddy);
   } else {
     pigeon.add(new THREE.Mesh(body, voxelMaterial));

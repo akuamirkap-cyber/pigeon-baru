@@ -3,11 +3,26 @@ import Scene from "./Scene";
 import { SKINS } from "./characters";
 import { EFFECTS } from "./effects";
 import { cn } from "./utils/cn";
+import { useUI } from "../game/store";
+
+const SCALE_PRESETS = [
+  { label: "0.6×", value: 0.6, name: "Mini" },
+  { label: "0.75×", value: 0.75, name: "Kecil" },
+  { label: "0.88×", value: 0.88, name: "Default" },
+  { label: "1.0×", value: 1.0, name: "Standar" },
+  { label: "1.25×", value: 1.25, name: "Besar" },
+  { label: "1.5×", value: 1.5, name: "Jumbo" },
+];
 
 export default function BuddiesApp({ onBackToPigeon }: { onBackToPigeon?: () => void } = {}) {
   const [index, setIndex] = useState(0);
   const [effectId, setEffectId] = useState<string | null>(null);
+  const [scalePanelOpen, setScalePanelOpen] = useState(true);
   const skin = SKINS[index];
+
+  const buddyScale = useUI((s) => s.buddyScale);
+  const setBuddyScale = useUI((s) => s.setBuddyScale);
+  const resetBuddyScale = useUI((s) => s.resetBuddyScale);
 
   const prev = useCallback(
     () => setIndex((i) => (i - 1 + SKINS.length) % SKINS.length),
@@ -15,14 +30,23 @@ export default function BuddiesApp({ onBackToPigeon }: { onBackToPigeon?: () => 
   );
   const next = useCallback(() => setIndex((i) => (i + 1) % SKINS.length), []);
 
+  const adjustScale = useCallback(
+    (delta: number) => {
+      setBuddyScale(Math.max(0.4, Math.min(2.2, Math.round((buddyScale + delta) * 20) / 20)));
+    },
+    [buddyScale, setBuddyScale]
+  );
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") prev();
       if (e.key === "ArrowRight") next();
+      if (e.key === "+" || e.key === "=") adjustScale(0.05);
+      if (e.key === "-" || e.key === "_") adjustScale(-0.05);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [prev, next]);
+  }, [prev, next, adjustScale]);
 
   return (
     <div
@@ -33,7 +57,132 @@ export default function BuddiesApp({ onBackToPigeon }: { onBackToPigeon?: () => 
     >
       {/* 3D canvas */}
       <div className="absolute inset-0">
-        <Scene skinIndex={index} effectId={effectId} />
+        <Scene skinIndex={index} effectId={effectId} scale={buddyScale} />
+      </div>
+
+      {/* Floating Scale Adjuster Serentak (Kiri) */}
+      <div className="absolute left-3 top-20 z-20 sm:left-6">
+        {scalePanelOpen ? (
+          <div className="flex w-[260px] flex-col gap-2.5 rounded-3xl bg-white/85 p-3.5 shadow-2xl backdrop-blur-md transition-all sm:w-[280px]">
+            {/* Header row */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span className="text-base">📏</span>
+                <div>
+                  <h3 className="text-xs font-black tracking-tight text-slate-800 leading-none">
+                    UKURAN BUDDIES
+                  </h3>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 leading-none">
+                    Serentak {SKINS.length} Karakter
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setScalePanelOpen(false)}
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200/70 text-xs font-bold text-slate-600 transition hover:bg-slate-300 active:scale-95"
+                title="Sembunyikan panel ukuran"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Current scale badge & stepper */}
+            <div className="flex items-center justify-between rounded-2xl bg-slate-100/80 px-2.5 py-1.5">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-lg font-black text-slate-900 leading-none">
+                  {buddyScale.toFixed(2)}×
+                </span>
+                <span className="text-xs font-bold text-slate-500">
+                  ({Math.round(buddyScale * 100)}%)
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => adjustScale(-0.05)}
+                  className="flex h-7 w-7 items-center justify-center rounded-xl bg-white text-sm font-black text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-90"
+                  title="Perkecil ukuran (-5%)"
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  onClick={() => adjustScale(0.05)}
+                  className="flex h-7 w-7 items-center justify-center rounded-xl bg-white text-sm font-black text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-90"
+                  title="Perbesar ukuran (+5%)"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Range slider */}
+            <div className="flex flex-col gap-1 px-0.5">
+              <input
+                type="range"
+                min={0.4}
+                max={2.2}
+                step={0.02}
+                value={buddyScale}
+                onChange={(e) => setBuddyScale(parseFloat(e.target.value))}
+                className="h-2 w-full cursor-pointer accent-amber-500"
+                aria-label="Atur ukuran semua Voxel Buddies"
+              />
+              <div className="flex justify-between text-[10px] font-bold text-slate-400">
+                <span>0.4×</span>
+                <span className="text-amber-600 font-extrabold">0.88× (Default)</span>
+                <span>2.2×</span>
+              </div>
+            </div>
+
+            {/* Quick preset chips */}
+            <div className="flex flex-wrap gap-1">
+              {SCALE_PRESETS.map((p) => {
+                const active = Math.abs(buddyScale - p.value) < 0.02;
+                return (
+                  <button
+                    key={p.value}
+                    type="button"
+                    onClick={() => setBuddyScale(p.value)}
+                    className={cn(
+                      "flex-1 rounded-xl py-1 text-center text-[10px] font-extrabold transition-all",
+                      active
+                        ? "bg-amber-500 text-white shadow-sm scale-105"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200/80 active:scale-95"
+                    )}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Reset button */}
+            <div className="flex items-center justify-between border-t border-slate-200/60 pt-2 text-[10px]">
+              <span className="font-semibold text-slate-500">
+                Otomatis tersimpan
+              </span>
+              <button
+                type="button"
+                onClick={() => resetBuddyScale()}
+                className="font-bold text-amber-600 hover:text-amber-700 active:scale-95"
+              >
+                ↺ Reset (0.88×)
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setScalePanelOpen(true)}
+            className="flex items-center gap-1.5 rounded-2xl bg-white/85 px-3 py-2 text-xs font-black text-slate-800 shadow-xl backdrop-blur-md transition-all hover:bg-white hover:scale-105 active:scale-95"
+            title="Buka panel pengatur ukuran serentak"
+          >
+            <span>📏</span>
+            <span>{buddyScale.toFixed(2)}×</span>
+          </button>
+        )}
       </div>
 
       {/* Effect selector (kanan) */}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useUI, WHEEL_COLORS, type WheelColor } from "../game/store";
 import { getSkin, SKINS, DECKS, type Skin, type DeckOption } from "../game/skins";
+import { VOXEL_BOARD_IDS } from "../game/buddiesSkins";
 import { sfx } from "../game/audio";
 import { engine } from "../game/engine";
 import { ensureThumbs, getThumb, getThumbSprite, onThumbsReady, registerThumbSpin, THUMB_FRAME_COUNT } from "../game/thumbs";
@@ -157,10 +158,24 @@ function SkinCard({ skin }: { skin: Skin }) {
   );
 }
 
-function DeckPreview3D({ deckId }: { deckId: DeckOption["id"] }) {
-  const noWheels = deckId === "hoverboard" || deckId === "broom" || deckId === "silver" || deckId === "ufo";
+function DeckPreview3D({ deck }: { deck: DeckOption }) {
+  const isVoxel = VOXEL_BOARD_IDS.has(deck.id);
+  const deckId = deck.id;
+  const noWheels = deckId !== "default" && deckId !== "baguette";
+  if (isVoxel) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-1 select-none py-1">
+        <span className="text-4xl animate-bounce drop-shadow-[0_4px_6px_rgba(0,0,0,0.15)]" role="img" aria-label={deck.name}>
+          {deck.emoji}
+        </span>
+        <span className="rounded-full bg-white/90 px-2 py-0.5 font-display text-[2.2cqw] font-bold text-amber-700 shadow-xs">
+          VOXEL 3D
+        </span>
+      </div>
+    );
+  }
   return (
-    <div className={`deck-preview-3d ${deckId === "baguette" ? "deck-preview-baguette" : deckId === "broom" ? "deck-preview-broom" : deckId === "silver" ? "deck-preview-silver" : deckId === "hoverboard" ? "deck-preview-hoverboard" : "deck-preview-classic"}`} aria-hidden="true">
+    <div className={`deck-preview-3d ${deckId === "baguette" ? "deck-preview-baguette" : deckId === "hoverboard" ? "deck-preview-hoverboard" : "deck-preview-classic"}`} aria-hidden="true">
       <div className="deck-preview-board">
         <div className="deck-preview-grip" />
         {!noWheels && <>
@@ -199,7 +214,7 @@ function DeckCard({ deck, active, onSelect }: { deck: DeckOption; active: boolea
 
       {/* Visual illustration of deck */}
       <div className="my-2 flex h-[26cqw] w-full items-center justify-center rounded-xl bg-gradient-to-b from-[#f0f4f8] to-[#e1e9f0] p-2">
-        <DeckPreview3D deckId={deck.id} />
+        <DeckPreview3D deck={deck} />
       </div>
 
       <div>
@@ -244,6 +259,9 @@ export function SkinsPanel() {
   const deckOverride = useUI((s) => s.deckOverride);
   const setDeckOverride = useUI((s) => s.setDeckOverride);
   const addPopup = useUI((s) => s.addPopup);
+  const buddyScale = useUI((s) => s.buddyScale);
+  const setBuddyScale = useUI((s) => s.setBuddyScale);
+  const resetBuddyScale = useUI((s) => s.resetBuddyScale);
 
   const [shakeKey, setShakeKey] = useState(0);
   const current = getSkin(previewId);
@@ -295,14 +313,10 @@ export function SkinsPanel() {
   const selectDeck = (d: DeckOption["id"]) => {
     setDeckOverride(d);
     engine.skinPop();
-    if (d === "baguette") {
-      sfx.unlock();
-      addPopup("PAPAN ROTI BAGUETTE!", "#ff9f1c", "Free Baguette Skateboard");
-    } else {
-      sfx.unlock();
-      const labels: Record<DeckOption["id"], string> = { default: "PAPAN STANDAR", baguette: "PAPAN BAGUETTE", hoverboard: "HOVERBOARD NEON", broom: "SAPU TERBANG", silver: "SILVER SURFER", ufo: "UFO SKATE" };
-      addPopup(`${labels[d]}!`, d === "silver" ? "#8fd3ff" : "#2ec4b6", "Free skateboard skin");
-    }
+    sfx.unlock();
+    const opt = DECKS.find((k) => k.id === d);
+    const title = opt ? opt.name.toUpperCase() : "PAPAN SKATE";
+    addPopup(`${title}!`, "#2ec4b6", "Papan skateboard aktif");
   };
 
   return (
@@ -453,6 +467,57 @@ export function SkinsPanel() {
                 🦊 BUDDIES ({SKINS.filter((s) => !!s.buddyId).length})
               </button>
             </div>
+
+            {/* Voxel Buddies simultaneous scale bar */}
+            {(skinFilter === "buddies" || current.buddyId) && (
+              <div className="mx-3 mb-1.5 flex items-center justify-between rounded-xl bg-amber-500/10 border border-amber-500/25 px-2.5 py-1 text-slate-700">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[2.6cqw]">📏</span>
+                  <span className="font-display text-[2.2cqw] font-bold text-amber-900">
+                    UKURAN BUDDIES:
+                  </span>
+                  <span className="font-display text-[2.4cqw] font-black text-amber-600">
+                    {buddyScale.toFixed(2)}×
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setBuddyScale(Math.max(0.4, buddyScale - 0.05))}
+                    className="flex h-5 w-5 items-center justify-center rounded-lg bg-white text-xs font-black shadow-sm active:scale-90"
+                    title="Perkecil (-5%)"
+                  >
+                    −
+                  </button>
+                  <input
+                    type="range"
+                    min={0.4}
+                    max={2.2}
+                    step={0.02}
+                    value={buddyScale}
+                    onChange={(e) => setBuddyScale(parseFloat(e.target.value))}
+                    className="h-1.5 w-16 cursor-pointer accent-amber-500"
+                    aria-label="Skala ukuran semua Voxel Buddies"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setBuddyScale(Math.min(2.2, buddyScale + 0.05))}
+                    className="flex h-5 w-5 items-center justify-center rounded-lg bg-white text-xs font-black shadow-sm active:scale-90"
+                    title="Perbesar (+5%)"
+                  >
+                    +
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => resetBuddyScale()}
+                    className="ml-1 text-[2cqw] font-bold text-amber-700 hover:underline active:scale-95"
+                    title="Reset ukuran ke 0.88x"
+                  >
+                    RESET
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="grid flex-1 grid-cols-3 content-start gap-1.5 overflow-y-auto px-3 pb-2" style={{ touchAction: "pan-y" }}>
               {filteredSkins.map((s) => (

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { SKINS, getSkin } from "./skins";
+import { SKINS, getSkin, DECKS, type DeckId } from "./skins";
 import { TRICKS, type TrickKind } from "./tricks";
 import { loadWordHunt, saveWordHunt, type WordHuntData } from "./wordHunt";
 import { evaluate, markAllSeen, unseenCount, getAch } from "./achievements";
@@ -19,6 +19,31 @@ export const WHEEL_COLORS: { id: WheelColor; hex: string; label: string }[] = [
   { id: "yellow", hex: "#ffd60a", label: "KUNING" },
   { id: "blue", hex: "#2e7de6", label: "BIRU" },
 ];
+
+export interface DeckAdjustment {
+  scaleX: number; // Skala panjang / maju-mundur (default 1.0)
+  scaleY: number; // Skala ketebalan vertikal (default 1.0)
+  scaleZ: number; // Skala lebar samping (default 1.0)
+  offsetY: number; // Ketinggian relatif agar mepet telapak kaki (default 0.0)
+}
+
+export const DEFAULT_DECK_ADJUSTMENTS: Record<DeckId, DeckAdjustment> = {
+  default: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.0 },
+  baguette: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.0 },
+  hoverboard: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.0 },
+  broom: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.05 }, // nempel mepet di telapak kaki
+  ufo: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.04 },
+  surfboard: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.02 },
+  carpet: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.03 },
+  kinton: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.03 },
+  leaf: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.03 },
+  sword: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.03 },
+  pizza: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.02 },
+  sushi: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.02 },
+  banana: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.03 },
+  icecream: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.02 },
+  drone: { scaleX: 1.0, scaleY: 1.0, scaleZ: 1.0, offsetY: 0.04 },
+};
 
 export interface Popup {
   id: number;
@@ -100,8 +125,13 @@ interface UIState {
   /** waktu hari untuk Shibuya: pagi / siang / sore / malam */
   shibuyaTime: "pagi" | "siang" | "sore" | "malam";
   cycleShibuyaTime: () => void;
-  deckOverride: "default" | "baguette" | "hoverboard" | "broom" | "silver" | "ufo";
-  setDeckOverride: (d: "default" | "baguette" | "hoverboard" | "broom" | "silver" | "ufo") => void;
+  /** Penyetelan ukuran & posisi nempel tiap papan skateboard */
+  deckAdjustments: Record<DeckId, DeckAdjustment>;
+  setDeckAdjustment: (id: DeckId, adj: Partial<DeckAdjustment>) => void;
+  resetDeckAdjustment: (id: DeckId) => void;
+  resetAllDeckAdjustments: () => void;
+  deckOverride: DeckId;
+  setDeckOverride: (d: DeckId) => void;
   wheelColor: WheelColor;
   setWheelColor: (c: WheelColor) => void;
   worldCurve: "subway" | "flat";
@@ -177,18 +207,23 @@ const PIGEON_ADJUST_INIT = (() => {
   return { size, y, x };
 })();
 
-/** Skala ukuran Voxel Buddies serentak untuk semua 33 karakter */
-export const BUDDY_SCALE_DEFAULT = 1.0;
+/** Skala ukuran Voxel Buddies serentak untuk semua 33 karakter (default 0.88x) */
+export const BUDDY_SCALE_DEFAULT = 0.88;
 const BUDDY_SCALE_INIT = (() => {
   const c = load<{ scale?: number }>("pigeon-sk8-buddy-scale", {});
-  const scale = typeof c?.scale === "number" && isFinite(c.scale) ? Math.max(0.4, Math.min(2.5, c.scale)) : BUDDY_SCALE_DEFAULT;
+  // Bila belum pernah disimpan atau nilainya adalah default lama (1.0), gunakan default baru 0.88
+  let scale = BUDDY_SCALE_DEFAULT;
+  if (typeof c?.scale === "number" && isFinite(c.scale) && c.scale !== 1.0) {
+    scale = Math.max(0.4, Math.min(2.5, Math.round(c.scale * 100) / 100));
+  }
   save("pigeon-sk8-buddy-scale", { scale });
   return scale;
 })();
 
 const initialSkin = (() => {
   const id = load<string>("pigeon-sk8-skin", "classic");
-  return initialUnlocked.includes(id) ? id : "classic";
+  const exists = SKINS.some((s) => s.id === id);
+  return exists && initialUnlocked.includes(id) ? id : (SKINS[0]?.id ?? "classic");
 })();
 
 const defaultTricks = Object.fromEntries(TRICKS.map((t) => [t.kind, true])) as Record<TrickKind, boolean>;
@@ -315,7 +350,7 @@ export const useUI = create<UIState>((set, get) => ({
   },
   buddyScale: BUDDY_SCALE_INIT,
   setBuddyScale: (v) => {
-    const scale = Math.max(0.4, Math.min(2.5, Math.round(v * 20) / 20));
+    const scale = Math.max(0.4, Math.min(2.5, Math.round(v * 100) / 100));
     save("pigeon-sk8-buddy-scale", { scale });
     set({ buddyScale: scale });
   },
@@ -356,9 +391,51 @@ export const useUI = create<UIState>((set, get) => ({
     save("pigeon-sk8-trackmode", trackMode);
     set({ trackMode });
   },
+  deckAdjustments: (() => {
+    const saved = load<Record<string, Partial<DeckAdjustment>>>("pigeon-sk8-deck-adjustments", {});
+    const result = { ...DEFAULT_DECK_ADJUSTMENTS };
+    if (saved && typeof saved === "object") {
+      for (const [key, val] of Object.entries(saved)) {
+        if (key in result && val) {
+          result[key as DeckId] = {
+            ...result[key as DeckId],
+            ...val,
+          };
+        }
+      }
+    }
+    return result;
+  })(),
+  setDeckAdjustment: (id, adj) => {
+    const prev = get().deckAdjustments;
+    const current = prev[id] || DEFAULT_DECK_ADJUSTMENTS[id] || { scaleX: 1, scaleY: 1, scaleZ: 1, offsetY: 0 };
+    const updated = {
+      ...prev,
+      [id]: {
+        ...current,
+        ...adj,
+      },
+    };
+    save("pigeon-sk8-deck-adjustments", updated);
+    set({ deckAdjustments: updated });
+  },
+  resetDeckAdjustment: (id) => {
+    const prev = get().deckAdjustments;
+    const updated = {
+      ...prev,
+      [id]: { ...(DEFAULT_DECK_ADJUSTMENTS[id] || { scaleX: 1, scaleY: 1, scaleZ: 1, offsetY: 0 }) },
+    };
+    save("pigeon-sk8-deck-adjustments", updated);
+    set({ deckAdjustments: updated });
+  },
+  resetAllDeckAdjustments: () => {
+    const updated = { ...DEFAULT_DECK_ADJUSTMENTS };
+    save("pigeon-sk8-deck-adjustments", updated);
+    set({ deckAdjustments: updated });
+  },
   deckOverride: (() => {
     const d = load<string>("pigeon-sk8-deck", "default");
-    return (["default", "baguette", "hoverboard", "broom", "silver", "ufo"] as const).includes(d as "default" | "baguette" | "hoverboard" | "broom" | "silver" | "ufo") ? d as "default" | "baguette" | "hoverboard" | "broom" | "silver" | "ufo" : "default";
+    return DECKS.some((k) => k.id === d) ? (d as DeckId) : "default";
   })(),
   setDeckOverride: (deckOverride) => {
     save("pigeon-sk8-deck", deckOverride);

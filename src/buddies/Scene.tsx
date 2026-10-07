@@ -41,7 +41,7 @@ function Platform() {
 }
 
 /* Character with idle hop + squash */
-function Character({ skinIndex, scale = 1 }: { skinIndex: number; scale?: number }) {
+function Character({ skinIndex, scale = 0.88 }: { skinIndex: number; scale?: number }) {
   const ref = useRef<THREE.Group>(null);
   const { Comp } = SKINS[skinIndex];
 
@@ -79,7 +79,7 @@ function Character({ skinIndex, scale = 1 }: { skinIndex: number; scale?: number
 export default function Scene({
   skinIndex,
   effectId,
-  scale = 1,
+  scale = 0.88,
 }: {
   skinIndex: number;
   effectId: string | null;
@@ -114,9 +114,9 @@ export default function Scene({
         <ContactShadows
           position={[0, 0.02, 0]}
           opacity={0.35}
-          scale={10}
+          scale={10 * Math.max(0.6, Math.min(1.6, scale))}
           blur={2.2}
-          far={4}
+          far={4 * Math.max(0.6, Math.min(1.6, scale))}
         />
       </Suspense>
 
@@ -124,11 +124,11 @@ export default function Scene({
         enablePan={false}
         autoRotate
         autoRotateSpeed={1.2}
-        minDistance={7}
-        maxDistance={18}
+        minDistance={5}
+        maxDistance={22}
         minPolarAngle={0.3}
         maxPolarAngle={Math.PI / 2.1}
-        target={[0, 2.4, 0]}
+        target={[0, 2.2 * Math.max(0.5, Math.min(1.4, scale)), 0]}
       />
     </Canvas>
   );

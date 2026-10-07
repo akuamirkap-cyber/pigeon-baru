@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useUI, WHEEL_COLORS } from "../game/store";
 import { engine } from "../game/engine";
-import { getSkin } from "../game/skins";
+import { getSkin, DECKS } from "../game/skins";
 import { sfx, unlockAudio } from "../game/audio";
 import { BreadIcon } from "./BreadIcon";
 import { SkinsPanel } from "./SkinsPanel";
@@ -162,18 +162,13 @@ function SettingsRow() {
   const [tips, setTips] = useState(false);
 
   const toggleDeck = () => {
-    const order = ["default", "baguette", "hoverboard", "broom", "silver", "ufo"] as const;
+    const order = DECKS.map((d) => d.id);
     const next = order[(order.indexOf(deck) + 1) % order.length];
     setDeck(next);
     engine.skinPop();
-    if (next === "baguette") {
-      sfx.unlock();
-      addPopup("PAPAN ROTI BAGUETTE!", "#ff9f1c", "Free Baguette Skateboard");
-    } else {
-      sfx.unlock();
-      const labels = { default: "PAPAN STANDAR", hoverboard: "HOVERBOARD NEON", broom: "SAPU TERBANG", silver: "SILVER SURFER", ufo: "UFO SKATE" } as const;
-      addPopup(labels[next as keyof typeof labels] ?? "PAPAN", next === "silver" ? "#8fd3ff" : "#2ec4b6", "Free skateboard skin");
-    }
+    sfx.unlock();
+    const curDeck = DECKS.find((d) => d.id === next);
+    addPopup(curDeck?.name.toUpperCase() ?? "PAPAN", "#2ec4b6", curDeck?.tagline ?? "Skateboard");
   };
 
   const toggleCurve = () => {
@@ -211,7 +206,7 @@ function SettingsRow() {
       <div className="flex w-full gap-1.5">
         <CyclePill label="SPEED" value={`${speed}×`} accent={speed > 1 ? "#d98b3d" : undefined} onTap={cycleSpeed} />
         <CyclePill label="CURVE" value={curve === "subway" ? "SUBWAY" : "FLAT"} accent={curve === "subway" ? "#168879" : undefined} onTap={toggleCurve} />
-        <CyclePill label="BOARD" value={deck === "baguette" ? "BAGUETTE" : deck === "hoverboard" ? "HOVER" : deck === "broom" ? "SAPU" : deck === "silver" ? "SILVER" : "PRO"} accent={deck !== "default" ? "#d98b3d" : undefined} onTap={toggleDeck} />
+        <CyclePill label="BOARD" value={deck === "default" ? "PRO" : (DECKS.find((d) => d.id === deck)?.emoji ?? "🛹")} accent={deck !== "default" ? "#d98b3d" : undefined} onTap={toggleDeck} />
       </div>
       <div className="flex w-full gap-1.5">
         <CyclePill

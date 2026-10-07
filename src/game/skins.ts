@@ -24,8 +24,25 @@ export type DeckKind = "standard" | "baguette" | "hoverboard" | "broom" | "silve
 /** Spesies karakter yang bisa dimainkan. `undefined` di Skin berarti merpati. */
 export type CharKind = "pigeon" | "cat" | "flamingo" | "crow" | "duck" | "panda" | "dino" | "frog" | "shiba" | "littleJapanFriend" | "buddy";
 
+export type DeckId =
+  | "default"
+  | "baguette"
+  | "hoverboard"
+  | "broom"
+  | "ufo"
+  | "surfboard"
+  | "carpet"
+  | "kinton"
+  | "leaf"
+  | "sword"
+  | "pizza"
+  | "sushi"
+  | "banana"
+  | "icecream"
+  | "drone";
+
 export interface DeckOption {
-  id: "default" | "baguette" | "hoverboard" | "broom" | "silver" | "ufo";
+  id: DeckId;
   name: string;
   tagline: string;
   badge: string;
@@ -61,25 +78,97 @@ export const DECKS: DeckOption[] = [
   {
     id: "broom",
     name: "Sapu Terbang",
-    tagline: "Sapu terbang ajaib ala penyihir, tanpa roda",
-    badge: "FREE / GRATIS",
+    tagline: "Sapu sihir terbang dengan percikan ajaib berkilau",
+    badge: "VOXEL BOARD",
     emoji: "🧹",
     cost: 0,
   },
   {
-    id: "silver",
-    name: "Silver Surfer",
-    tagline: "Papan perak kosmik licin tanpa roda",
-    badge: "FREE / GRATIS",
-    emoji: "✨",
+    id: "ufo",
+    name: "UFO Mini",
+    tagline: "Piring terbang mungil dengan pilot alien hijau dan sinar traktor",
+    badge: "VOXEL BOARD",
+    emoji: "🛸",
     cost: 0,
   },
   {
-    id: "ufo",
-    name: "UFO Skate",
-    tagline: "Piring terbang futuristik dengan lampu alien",
-    badge: "FREE / GRATIS",
-    emoji: "🛸",
+    id: "surfboard",
+    name: "Papan Silver Surfer",
+    tagline: "Papan selancar kosmik serba chrome dengan jejak energi",
+    badge: "VOXEL BOARD",
+    emoji: "🏄",
+    cost: 0,
+  },
+  {
+    id: "carpet",
+    name: "Karpet Terbang",
+    tagline: "Karpet ajaib ungu-emas dari Agrabah meluncur di udara",
+    badge: "VOXEL BOARD",
+    emoji: "🪄",
+    cost: 0,
+  },
+  {
+    id: "kinton",
+    name: "Awan Kinton",
+    tagline: "Awan kuning empuk milik Goku meluncur cepat",
+    badge: "VOXEL BOARD",
+    emoji: "☁️",
+    cost: 0,
+  },
+  {
+    id: "leaf",
+    name: "Daun Raksasa",
+    tagline: "Daun hijau lebar kendaraan para peri hutan berembun sejuk",
+    badge: "VOXEL BOARD",
+    emoji: "🍃",
+    cost: 0,
+  },
+  {
+    id: "sword",
+    name: "Keris Terbang",
+    tagline: "Bilah keris wuxia berkelok dengan aura energi biru mistis",
+    badge: "VOXEL BOARD",
+    emoji: "⚔️",
+    cost: 0,
+  },
+  {
+    id: "pizza",
+    name: "Pizza Slice",
+    tagline: "Potongan pizza pepperoni dengan keju meleleh di pinggir",
+    badge: "VOXEL BOARD",
+    emoji: "🍕",
+    cost: 0,
+  },
+  {
+    id: "sushi",
+    name: "Sushi Salmon",
+    tagline: "Nigiri salmon segar dengan ikat nori dan wasabi",
+    badge: "VOXEL BOARD",
+    emoji: "🍣",
+    cost: 0,
+  },
+  {
+    id: "banana",
+    name: "Pisang Kupas",
+    tagline: "Papan seluncur pisang terkupas dengan potassium power",
+    badge: "VOXEL BOARD",
+    emoji: "🍌",
+    cost: 0,
+  },
+  {
+    id: "icecream",
+    name: "Es Krim Leleh",
+    tagline: "Es krim stik stroberi digigit manis plus sprinkles",
+    badge: "VOXEL BOARD",
+    emoji: "🍦",
+    cost: 0,
+  },
+  {
+    id: "drone",
+    name: "Drone Quadcopter",
+    tagline: "Drone 4 baling-baling berputar kencang, siap take-off",
+    badge: "VOXEL BOARD",
+    emoji: "🚁",
     cost: 0,
   },
 ];
@@ -152,12 +241,10 @@ const littleJapanFriendSkin = (friend: ShibuyaAnimalId, name: string, tagline: s
 });
 
 const LITTLE_JAPAN_FRIEND_SKINS: Skin[] = [
-  littleJapanFriendSkin("tanuki", "Tanuki", "Little Japan Friend · source Shibuya Blocks", "#8e714e", "#6b5f43"),
   littleJapanFriendSkin("monkey", "Monkey", "Little Japan Friend · source Shibuya Blocks", "#ac9b89", "#d69989"),
-  littleJapanFriendSkin("neko", "Neko", "Little Japan Friend · source Shibuya Blocks", "#edead6", "#b95640"),
 ];
 
-import { BUDDY_SKIN_OPTIONS } from "./buddiesSkins";
+import { BUDDY_SKIN_OPTIONS, VOXEL_BOARD_IDS, getBuddyBoardParts } from "./buddiesSkins";
 
 export const SKINS: Skin[] = [
   {
@@ -167,52 +254,10 @@ export const SKINS: Skin[] = [
     deck: "#2ec4b6", wheels: "#fff1d6",
   },
   {
-    id: "postman", name: "Merpati Pos Klasik", tagline: "Topi kurir + tas surat kilat (Free Skin)", cost: 0,
-    body: "#707f90", belly: "#8f9dae", head: "#667687", neck1: "#1f8b4c", neck2: "#623f99",
-    wing: "#5f6c7a", wingTip: "#262b33", tail: "#525e6c", tailTip: "#262b33", beak: "#2b2c30", cere: "#f0f0f0", feet: ORANGE,
-    deck: "#1c2d42", wheels: "#ffd60a", hat: "mailcap", hatColor: "#1c2d42", hatColor2: "#ffd60a", accessory: "mailbag",
-  },
-  {
-    id: "baguette", name: "Chef Baguette", tagline: "Papan skateboard roti baguette renyah & baret (Free Skin)", cost: 0,
-    body: "#ded0bd", belly: "#f5ece0", head: "#d4c5a6", neck1: "#d99343", neck2: "#b87028",
-    wing: "#c4b598", wingTip: "#7e6d4c", tail: "#b8a786", tailTip: "#756342", beak: "#f59e0b", cere: "#ffffff", feet: "#f59e0b",
-    deck: "#c68038", wheels: "#ffe066", hat: "beret", hatColor: "#1f2430", deckType: "baguette",
-  },
-  {
-    id: "punk", name: "Punk Coo", tagline: "Too fast to live", cost: 50,
-    body: "#3a3f4a", belly: "#4b515d", head: "#343943", neck1: "#e63946", neck2: "#9d0208",
-    wing: "#2b3038", wingTip: "#111111", tail: "#2b3038", tailTip: "#111111", beak: "#222222", cere: "#dddddd", feet: ORANGE,
-    deck: "#e63946", wheels: "#111111", hat: "mohawk", hatColor: "#ff2d55",
-  },
-  {
     id: "pinky", name: "Pink Pigeon", tagline: "Rare & fabulous", cost: 80,
     body: "#f4a3c4", belly: "#ffc6dd", head: "#f28fb8", neck1: "#f9c74f", neck2: "#f3722c",
     wing: "#c77d92", wingTip: "#8a4b60", tail: "#c77d92", tailTip: "#8a4b60", beak: "#d64d7a", cere: "#ffffff", feet: ORANGE,
     deck: "#9b5de5", wheels: "#fff1d6",
-  },
-  {
-    id: "frost", name: "Frosty", tagline: "Ice cold tricks", cost: 100,
-    body: "#bfe3ff", belly: "#e6f5ff", head: "#a9d6f7", neck1: "#ffffff", neck2: "#7cc4f5",
-    wing: "#98c8ea", wingTip: "#5b9bd5", tail: "#98c8ea", tailTip: "#5b9bd5", beak: ORANGE, cere: "#ffffff", feet: ORANGE,
-    deck: "#ffffff", wheels: "#7cc4f5", hat: "beanie", hatColor: "#e63946", hatColor2: "#ffffff",
-  },
-  {
-    id: "street", name: "Street Coo", tagline: "Cap backwards, always", cost: 120,
-    body: "#aab3bf", belly: "#c3cad4", head: "#9aa3b0", neck1: "#2fa36b", neck2: "#7a5cab",
-    wing: "#8f98a5", wingTip: "#4a4f57", tail: "#6e7682", tailTip: "#3b3f47", beak: "#2d2f33", cere: "#f0f0f0", feet: ORANGE,
-    deck: "#ffd60a", wheels: "#111111", hat: "cap", hatColor: "#e63946",
-  },
-  {
-    id: "king", name: "King Coo", tagline: "Ruler of the rooftops", cost: 150,
-    body: "#f6c453", belly: "#ffe08a", head: "#f4b942", neck1: "#ffffff", neck2: "#e0a100",
-    wing: "#e0a100", wingTip: "#b07d00", tail: "#e0a100", tailTip: "#b07d00", beak: "#8a5a00", cere: "#fff5d6", feet: ORANGE,
-    deck: "#7b2cbf", wheels: "#ffd60a", hat: "crown", hatColor: "#ffd60a", hatColor2: "#e63946",
-  },
-  {
-    id: "ninja", name: "Ninja Coo", tagline: "Silent. Deadly. Fluffy.", cost: 300,
-    body: "#22252d", belly: "#2f333d", head: "#1c1f26", neck1: "#2a2e38", neck2: "#22252d",
-    wing: "#1a1d24", wingTip: "#0d0f13", tail: "#1a1d24", tailTip: "#0d0f13", beak: "#ffd166", cere: "#3a3f4a", feet: ORANGE,
-    deck: "#111111", wheels: "#e63946", hat: "headband", hatColor: "#e63946",
   },
   {
     // FLAMINGO — badan kecil + leher panjang, paruh melengkung dengan ujung hitam
@@ -220,13 +265,6 @@ export const SKINS: Skin[] = [
     body: "#ff9ec4", belly: "#ffd3e4", head: "#ff9ec4", neck1: "#ff86b6", neck2: "#ffd3e4",
     wing: "#ff8fb8", wingTip: "#e2619a", tail: "#ff8fb8", tailTip: "#e2619a", beak: "#f7d8c4", cere: "#ffe0ef", feet: "#ff9f45",
     deck: "#ff70a6", wheels: "#1c1e22",
-  },
-  {
-    // GAGAK — hitam mengkilap dengan paruh besar dan kilau biru di sayap
-    id: "crow", name: "Gagak", tagline: "Gagak hitam mengkilap, paruh besar (Free)", cost: 0, kind: "crow",
-    body: "#23262e", belly: "#33373f", head: "#1e2128", neck1: "#2b3040", neck2: "#20242c",
-    wing: "#22252c", wingTip: "#171a20", tail: "#22252c", tailTip: "#2b3040", beak: "#3a3f47", cere: "#5b6472", feet: "#3a3f47",
-    deck: "#2b2f38", wheels: "#1c1e22",
   },
   ...LITTLE_JAPAN_FRIEND_SKINS,
   ...BUDDY_SKIN_OPTIONS,
@@ -650,55 +688,7 @@ export function baguetteDeckParts(): Part[] {
   return parts;
 }
 
-export function specialDeckParts(kind: "hoverboard" | "broom" | "silver" | "ufo"): Part[] {
-  if (kind === "ufo") {
-    // Flying-saucer silhouette: wide disc, raised cockpit dome, underside ring,
-    // and alternating alien running lights. All layers remain one stable deck.
-    return [
-      { x: 0, y: 0.00, z: 0, w: 1.82, h: 0.12, d: 0.96, color: "#53677f" },
-      { x: 0, y: 0.075, z: 0, w: 1.58, h: 0.07, d: 0.78, color: "#a7c4d5" },
-      { x: 0, y: 0.13, z: 0, w: 1.05, h: 0.20, d: 0.58, color: "#cceaf2" },
-      { x: 0, y: 0.255, z: 0, w: 0.58, h: 0.12, d: 0.36, color: "#e8fcff" },
-      { x: 0, y: -0.085, z: 0, w: 1.42, h: 0.06, d: 0.72, color: "#263b61" },
-      { x: 0, y: -0.125, z: 0, w: 0.98, h: 0.035, d: 0.52, color: "#182846" },
-      { x: 0.62, y: 0.075, z: 0, w: 0.20, h: 0.045, d: 0.58, color: "#53e5eb" },
-      { x: -0.62, y: 0.075, z: 0, w: 0.20, h: 0.045, d: 0.58, color: "#9b7cff" },
-      { x: 0, y: 0.08, z: 0.39, w: 0.28, h: 0.05, d: 0.07, color: "#53e5eb" },
-      { x: 0, y: 0.08, z: -0.39, w: 0.28, h: 0.05, d: 0.07, color: "#ffdb67" },
-    ];
-  }
-  if (kind === "broom") {
-    // Layered wooden shaft, leather grip and a proper fan of golden bristles.
-    return [
-      // Narrow wooden handle points forward; the brush head is clearly wider and layered.
-      { x: 0.20, y: 0.02, z: 0, w: 1.55, h: 0.075, d: 0.10, color: "#9a5527" },
-      { x: 0.72, y: 0.025, z: 0, w: 0.40, h: 0.115, d: 0.14, color: "#c57a36" },
-      { x: 0.82, y: 0.078, z: 0, w: 0.22, h: 0.035, d: 0.17, color: "#f0bd5a" },
-      { x: -0.64, y: 0.02, z: 0, w: 0.30, h: 0.23, d: 0.26, color: "#5c2d1b" },
-      { x: -0.78, y: -0.045, z: 0.00, w: 0.28, h: 0.12, d: 0.50, color: "#d9a33e" },
-      { x: -0.97, y: -0.075, z: 0.00, w: 0.20, h: 0.08, d: 0.42, color: "#f0c45d" },
-      { x: -1.13, y: -0.095, z: 0.00, w: 0.13, h: 0.055, d: 0.30, color: "#b87527" },
-      // visible bristle stripes give the brush its fan shape instead of a blocky plank
-      { x: -0.82, y: 0.035, z: -0.19, w: 0.26, h: 0.07, d: 0.16, color: "#b87927" },
-      { x: -0.82, y: 0.035, z: 0.19, w: 0.26, h: 0.07, d: 0.16, color: "#b87927" },
-      { x: -0.61, y: 0.115, z: 0, w: 0.12, h: 0.035, d: 0.28, color: "#e7b84b" },
-      // small leather foot rests: the rider visibly stands on the broom, not inside it
-      { x: 0.18, y: 0.095, z: 0.16, w: 0.25, h: 0.035, d: 0.16, color: "#5c2d1b" },
-      { x: -0.22, y: 0.095, z: -0.16, w: 0.25, h: 0.035, d: 0.16, color: "#5c2d1b" },
-    ];
-  }
-  if (kind === "silver") {
-    // A stepped, pointed surf silhouette with a chrome spine and blue reflection.
-    return [
-      { x: 0, y: 0.015, z: 0, w: 1.58, h: 0.075, d: 0.48, color: "#9eafc2" },
-      { x: 0.82, y: 0.02, z: 0, w: 0.32, h: 0.06, d: 0.32, color: "#dce8f2" },
-      { x: -0.82, y: 0.02, z: 0, w: 0.32, h: 0.06, d: 0.32, color: "#8295aa" },
-      { x: 0, y: 0.075, z: 0, w: 1.36, h: 0.035, d: 0.28, color: "#ffffff" },
-      { x: 0, y: 0.112, z: 0, w: 0.92, h: 0.018, d: 0.08, color: "#8fdcff" },
-      { x: 0.42, y: 0.105, z: 0, w: 0.3, h: 0.014, d: 0.045, color: "#ffffff" },
-      { x: -0.42, y: 0.105, z: 0, w: 0.3, h: 0.014, d: 0.045, color: "#c5f0ff" },
-    ];
-  }
+export function specialDeckParts(_kind: "hoverboard"): Part[] {
   // Hoverboard: layered anti-gravity deck, cyan rails, purple underside engines.
   return [
     { x: 0, y: 0.015, z: 0, w: 1.58, h: 0.10, d: 0.56, color: "#182641" },
@@ -711,12 +701,16 @@ export function specialDeckParts(kind: "hoverboard" | "broom" | "silver" | "ufo"
   ];
 }
 
-export function deckParts(k: Skin, deckOverride: "default" | "baguette" | "hoverboard" | "broom" | "silver" | "ufo" = "default"): Part[] {
+export function deckParts(k: Skin, deckOverride: DeckId = "default"): Part[] {
   if (deckOverride === "baguette" || k.deckType === "baguette") {
     return baguetteDeckParts();
   }
-  if (deckOverride === "hoverboard" || deckOverride === "broom" || deckOverride === "silver") {
-    return specialDeckParts(deckOverride);
+  if (deckOverride === "hoverboard") {
+    return specialDeckParts("hoverboard");
+  }
+  if (VOXEL_BOARD_IDS.has(deckOverride)) {
+    const parts = getBuddyBoardParts(deckOverride);
+    if (parts.length > 0) return parts;
   }
   return [
     { x: 0, y: 0, z: 0, w: 1.7, h: 0.08, d: 0.56, color: k.deck },
@@ -748,8 +742,8 @@ export const WHEEL_HEX: Record<string, string> = {
 };
 
 /** Wheel + bearing; axis along z. `wheelOverride` = pilihan warna ban pemain (default: hitam). */
-export function wheelParts(k: Skin, deckOverride: "default" | "baguette" | "hoverboard" | "broom" | "silver" | "ufo" = "default", wheelOverride: string = "auto"): Part[] {
-  const isWheelless = deckOverride === "hoverboard" || deckOverride === "broom" || deckOverride === "silver";
+export function wheelParts(k: Skin, deckOverride: DeckId = "default", wheelOverride: string = "auto"): Part[] {
+  const isWheelless = deckOverride === "hoverboard" || VOXEL_BOARD_IDS.has(deckOverride);
   // Keep a valid placeholder geometry for the shared Three.js builder; the
   // player hides the complete truck assembly for wheelless boards.
   if (isWheelless) return [{ x: 0, y: -10, z: 0, w: 0.01, h: 0.01, d: 0.01, color: "#000000" }];

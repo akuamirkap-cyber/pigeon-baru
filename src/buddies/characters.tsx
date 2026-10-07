@@ -158,22 +158,22 @@ export function Shiba() {
       {/* lengan pendek */}
       <Pair x={1.05} p={[0, 1.7, 0.1]} s={[0.44, 1.0, 0.52]} c={tan} />
       <Pair x={1.05} p={[0, 1.15, 0.16]} s={[0.46, 0.3, 0.56]} c={cream} />
-      {/* kepala ekstra besar bayi (menyatu dengan badan) */}
-      <B p={[0, 3.3, 0.1]} s={[2.5, 2.0, 2.15]} c={tan} />
+      {/* kepala bayi dikecilkan 20% */}
+      <B p={[0, 3.05, 0.08]} s={[2.0, 1.6, 1.72]} c={tan} />
       {/* moncong gembul */}
-      <B p={[0, 2.85, 1.3]} s={[1.15, 0.85, 0.5]} c={cream} />
-      <B p={[0, 3.1, 1.58]} s={[0.4, 0.3, 0.2]} c="#2b2420" />
+      <B p={[0, 2.68, 1.04]} s={[0.92, 0.68, 0.4]} c={cream} />
+      <B p={[0, 2.88, 1.26]} s={[0.32, 0.24, 0.16]} c="#2b2420" />
       {/* mata bayi besar berbinar + alis khas shiba */}
-      <Pair x={0.66} p={[0, 3.6, 1.22]} s={[0.46, 0.55, 0.12]} c="#2b2420" />
-      <Pair x={0.55} p={[0, 3.77, 1.29]} s={[0.15, 0.15, 0.06]} c="#ffffff" />
-      <Pair x={0.66} p={[0, 4.07, 1.22]} s={[0.3, 0.16, 0.1]} c={cream} />
+      <Pair x={0.53} p={[0, 3.28, 0.98]} s={[0.37, 0.44, 0.1]} c="#2b2420" />
+      <Pair x={0.44} p={[0, 3.42, 1.03]} s={[0.12, 0.12, 0.05]} c="#ffffff" />
+      <Pair x={0.53} p={[0, 3.66, 0.98]} s={[0.24, 0.13, 0.08]} c={cream} />
       {/* cheeks cream */}
-      <Pair x={1.28} p={[0, 3.15, 1.0]} s={[0.12, 0.5, 0.5]} c={cream} />
+      <Pair x={1.02} p={[0, 2.92, 0.8]} s={[0.1, 0.4, 0.4]} c={cream} />
       {/* pipi merona pink */}
-      <Pair x={1.0} p={[0, 3.1, 1.22]} s={[0.3, 0.24, 0.08]} c="#F4A4B0" />
+      <Pair x={0.8} p={[0, 2.88, 0.98]} s={[0.24, 0.19, 0.06]} c="#F4A4B0" />
       {/* telinga */}
-      <Pair x={0.85} p={[0, 4.6, 0.05]} s={[0.6, 0.75, 0.52]} c={tan} />
-      <Pair x={0.85} p={[0, 4.6, 0.32]} s={[0.36, 0.45, 0.1]} c={cream} />
+      <Pair x={0.68} p={[0, 4.1, 0.04]} s={[0.48, 0.6, 0.42]} c={tan} />
+      <Pair x={0.68} p={[0, 4.1, 0.25]} s={[0.29, 0.36, 0.08]} c={cream} />
       {/* ekor cinnamon roll: satu gumpalan bulat nempel pantat + ujung krem */}
       <B p={[0, 1.85, -0.95]} s={[0.95, 0.95, 0.8]} c={tan} />
       <B p={[0, 2.25, -0.85]} s={[0.6, 0.45, 0.6]} c={cream} />
@@ -491,13 +491,13 @@ export function Ufo() {
   const glow = "#B4F04A";
   return (
     <group position={[0, 2.3, 0]}>
-      {/* saucer body (stacked discs) */}
-      <B p={[0, 0, 0]} s={[4.0, 0.55, 4.0]} c={silver} />
-      <B p={[0, 0.35, 0]} s={[3.0, 0.5, 3.0]} c={silverD} />
-      <B p={[0, -0.35, 0]} s={[2.9, 0.45, 2.9]} c={silverD} />
+      {/* saucer body (stacked discs) - 40% lebih kecil (skala 0.6x) */}
+      <B p={[0, 0, 0]} s={[2.4, 0.45, 2.4]} c={silver} />
+      <B p={[0, 0.28, 0]} s={[1.8, 0.4, 1.8]} c={silverD} />
+      <B p={[0, -0.28, 0]} s={[1.74, 0.35, 1.74]} c={silverD} />
       {/* glass dome */}
-      <mesh position={[0, 0.95, 0]} castShadow>
-        <boxGeometry args={[1.7, 1.1, 1.7]} />
+      <mesh position={[0, 0.88, 0]} castShadow>
+        <boxGeometry args={[1.45, 1.15, 1.45]} />
         <meshStandardMaterial
           color={dome}
           roughness={0.15}
@@ -505,19 +505,19 @@ export function Ufo() {
           opacity={0.6}
         />
       </mesh>
-      {/* tiny alien pilot inside */}
+      {/* tiny alien pilot inside - UKURAN ASLI TETAP SAMA */}
       <B p={[0, 0.85, 0]} s={[0.7, 0.75, 0.6]} c={glow} />
       <Pair x={0.2} p={[0, 1.0, 0.31]} s={[0.16, 0.22, 0.06]} c="#1d1d1f" />
       <Pair x={0.3} p={[0, 1.4, 0]} s={[0.08, 0.3, 0.08]} c={glow} />
       <Pair x={0.3} p={[0, 1.58, 0]} s={[0.16, 0.16, 0.16]} c="#8FE03A" />
       {/* rim lights */}
-      <B p={[1.75, 0, 0]} s={[0.3, 0.3, 0.3]} c="#FF5A5A" />
-      <B p={[-1.75, 0, 0]} s={[0.3, 0.3, 0.3]} c="#FFD93D" />
-      <B p={[0, 0, 1.75]} s={[0.3, 0.3, 0.3]} c="#5AC8FF" />
-      <B p={[0, 0, -1.75]} s={[0.3, 0.3, 0.3]} c="#9B5AFF" />
+      <B p={[1.05, 0, 0]} s={[0.22, 0.22, 0.22]} c="#FF5A5A" />
+      <B p={[-1.05, 0, 0]} s={[0.22, 0.22, 0.22]} c="#FFD93D" />
+      <B p={[0, 0, 1.05]} s={[0.22, 0.22, 0.22]} c="#5AC8FF" />
+      <B p={[0, 0, -1.05]} s={[0.22, 0.22, 0.22]} c="#9B5AFF" />
       {/* tractor beam */}
-      <mesh position={[0, -1.3, 0]}>
-        <boxGeometry args={[1.6, 1.6, 1.6]} />
+      <mesh position={[0, -1.15, 0]}>
+        <boxGeometry args={[1.0, 1.4, 1.0]} />
         <meshStandardMaterial
           color="#BFFF7A"
           transparent
@@ -526,8 +526,8 @@ export function Ufo() {
           emissiveIntensity={0.6}
         />
       </mesh>
-      <mesh position={[0, -2.1, 0]}>
-        <boxGeometry args={[2.3, 0.8, 2.3]} />
+      <mesh position={[0, -1.85, 0]}>
+        <boxGeometry args={[1.45, 0.7, 1.45]} />
         <meshStandardMaterial
           color="#BFFF7A"
           transparent
@@ -537,7 +537,7 @@ export function Ufo() {
         />
       </mesh>
       {/* landing feet */}
-      <Pair x={1.35} p={[0, -0.75, 0]} s={[0.3, 0.5, 0.3]} c={silverD} />
+      <Pair x={0.81} p={[0, -0.6, 0]} s={[0.22, 0.4, 0.22]} c={silverD} />
     </group>
   );
 }
@@ -605,6 +605,9 @@ export function ShaunSheep() {
       <B p={[0, 2.4, -1.5]} s={[1.8, 1.6, 0.4]} c={woolD} />
       {/* ekor kecil */}
       <B p={[0, 2.9, -1.7]} s={[0.5, 0.5, 0.4]} c={wool} />
+      {/* lengan & tangan hitam Shaun the Sheep (bukan sayap!) */}
+      <Pair x={1.22} p={[0, 2.1, 0.1]} s={[0.36, 1.4, 0.42]} c={skin} />
+      <Pair x={1.22} p={[0, 1.35, 0.16]} s={[0.42, 0.35, 0.5]} c={skinL} />
       {/* kepala hitam (menyatu dengan badan wol) */}
       <B p={[0, 3.95, 0.85]} s={[1.5, 1.7, 1.5]} c={skin} />
       {/* mata putih besar + pupil */}
@@ -883,8 +886,12 @@ export function FennecFox() {
       {/* mata besar gelap */}
       <Pair x={0.55} p={[0, 4.1, 1.0]} s={[0.3, 0.42, 0.1]} c="#1d1d1f" />
       <Pair x={0.48} p={[0, 4.22, 1.06]} s={[0.1, 0.12, 0.05]} c="#ffffff" />
-      {/* pipi krem */}
-      <Pair x={0.95} p={[0, 3.65, 0.95]} s={[0.3, 0.55, 0.1]} c={cream} />
+      {/* kumis imut Baby Fennec di kiri & kanan moncong (menggantikan pipi putih kotak) */}
+      <Pair x={0.72} p={[0, 3.68, 1.22]} s={[0.42, 0.05, 0.04]} c="#4A3B2C" r={[0, 0, 0.08]} />
+      <Pair x={0.74} p={[0, 3.52, 1.24]} s={[0.46, 0.05, 0.04]} c="#4A3B2C" />
+      <Pair x={0.70} p={[0, 3.36, 1.22]} s={[0.40, 0.05, 0.04]} c="#4A3B2C" r={[0, 0, -0.08]} />
+      {/* pipi merona pink lembut */}
+      <Pair x={0.78} p={[0, 3.82, 1.02]} s={[0.26, 0.16, 0.06]} c="#F4A4B0" />
       {/* TELINGA RAKSASA khas fennec */}
       <Pair x={0.72} p={[0, 5.45, 0.0]} s={[0.75, 1.5, 0.45]} c={sand} />
       <Pair x={0.72} p={[0, 5.35, 0.24]} s={[0.45, 1.1, 0.1]} c="#E8A8A0" />
@@ -1528,11 +1535,11 @@ export const SKINS: Skin[] = [
   },
   {
     id: "fennec",
-    name: "Rubah Fennec",
+    name: "Baby Fennec",
     emoji: "🦊",
     color: "#EFD9A8",
     bg: ["#F8ECC8", "#E0C488"],
-    desc: "Rubah gurun mungil dengan telinga raksasa dan mata besar. Radar imut aktif!",
+    desc: "Rubah gurun mungil bertelinga raksasa dengan kumis imut. Lucu, lincah, dan penuh energi!",
     Comp: FennecFox,
   },
   {
@@ -1562,124 +1569,24 @@ export const SKINS: Skin[] = [
     desc: "Raja santai dengan jeruk yuzu di kepala. Chill level: maksimal. Ok I pull up.",
     Comp: Capybara,
   },
-  {
-    id: "broom",
-    name: "Sapu Terbang",
-    emoji: "🧹",
-    color: "#E8C25A",
-    bg: ["#D8C2F0", "#A98BD6"],
-    desc: "Sapu sihir dengan percikan ajaib. Siap terbang ke sekolah sihir!",
-    Comp: Broom,
-    float: true,
-  },
-  {
-    id: "ufo",
-    name: "UFO Mini",
-    emoji: "🛸",
-    color: "#B9C4CE",
-    bg: ["#B8C8F2", "#7E92D9"],
-    desc: "Piring terbang mungil dengan pilot alien hijau dan sinar traktor. Beep boop!",
-    Comp: Ufo,
-    float: true,
-  },
-  {
-    id: "surfboard",
-    name: "Papan Silver Surfer",
-    emoji: "🏄",
-    color: "#D9DEE6",
-    bg: ["#C2D4E8", "#8FA8C9"],
-    desc: "Papan selancar kosmik serba chrome dengan jejak energi. Power cosmic!",
-    Comp: SurferBoard,
-    float: true,
-  },
-  {
-    id: "carpet",
-    name: "Karpet Terbang",
-    emoji: "🪄",
-    color: "#6B3FA0",
-    bg: ["#E8D4F2", "#A87BD0"],
-    desc: "Karpet ajaib ungu-emas dari Agrabah. A whole new world menantimu!",
-    Comp: MagicCarpet,
-    float: true,
-  },
-  {
-    id: "kinton",
-    name: "Awan Kinton",
-    emoji: "☁️",
-    color: "#FFD84D",
-    bg: ["#BFE4FF", "#7FC2F0"],
-    desc: "Awan kuning empuk milik Goku. Hanya yang berhati murni bisa menaikinya!",
-    Comp: KintonCloud,
-    float: true,
-  },
-  {
-    id: "leaf",
-    name: "Daun Raksasa",
-    emoji: "🍃",
-    color: "#5CB544",
-    bg: ["#DCF2C8", "#9AD47C"],
-    desc: "Daun hijau lebar kendaraan para peri hutan. Ada embun seger di atasnya!",
-    Comp: GiantLeaf,
-    float: true,
-  },
-  {
-    id: "sword",
-    name: "Keris Terbang",
-    emoji: "⚔️",
-    color: "#D4DCE6",
-    bg: ["#C8D8E8", "#8FA3C2"],
-    desc: "Bilah keris berkelok dengan aura energi biru. Terbang ala pendekar wuxia!",
-    Comp: FlyingSword,
-    float: true,
-  },
-  {
-    id: "pizza",
-    name: "Pizza Slice",
-    emoji: "🍕",
-    color: "#FFCF52",
-    bg: ["#FFE0B8", "#F0A868"],
-    desc: "Potongan pizza pepperoni dengan keju meleleh di pinggir. Mamma mia!",
-    Comp: PizzaSlice,
-    float: true,
-  },
-  {
-    id: "sushi",
-    name: "Sushi Salmon",
-    emoji: "🍣",
-    color: "#F28A5C",
-    bg: ["#FFD8C8", "#F0A088"],
-    desc: "Nigiri salmon segar dengan ikat nori dan wasabi. Oishii desu~!",
-    Comp: Sushi,
-    float: true,
-  },
-  {
-    id: "banana",
-    name: "Pisang Kupas",
-    emoji: "🍌",
-    color: "#FFD83D",
-    bg: ["#FFF0B8", "#F0CE68"],
-    desc: "Duduk empuk di dalam pisang yang kulitnya terkupas. Potassium power!",
-    Comp: Banana,
-    float: true,
-  },
-  {
-    id: "icecream",
-    name: "Es Krim Leleh",
-    emoji: "🍦",
-    color: "#F58FB0",
-    bg: ["#FFDCE8", "#F0A0C0"],
-    desc: "Es krim stroberi digigit sebagian, netes-netes manis plus sprinkles!",
-    Comp: IceCream,
-    float: true,
-  },
-  {
-    id: "drone",
-    name: "Drone Quadcopter",
-    emoji: "🚁",
-    color: "#4A5568",
-    bg: ["#C8D4E0", "#8A9BB0"],
-    desc: "Drone 4 baling-baling berputar kencang dengan kursi merah mini. Siap take-off!",
-    Comp: Drone,
-    float: true,
-  },
 ];
+
+/**
+ * 12 Papan skateboard unik Voxel Buddies (Sapu Terbang s.d. Drone Quadcopter).
+ * Merupakan papan skate, bukan karakter.
+ */
+export const VOXEL_BOARDS = [
+  { id: "broom", name: "Sapu Terbang", emoji: "🧹", desc: "Sapu sihir dengan percikan ajaib. Siap terbang ke sekolah sihir!", Comp: Broom },
+  { id: "ufo", name: "UFO Mini", emoji: "🛸", desc: "Piring terbang mungil dengan pilot alien hijau dan sinar traktor. Beep boop!", Comp: Ufo },
+  { id: "surfboard", name: "Papan Silver Surfer", emoji: "🏄", desc: "Papan selancar kosmik serba chrome dengan jejak energi. Power cosmic!", Comp: SurferBoard },
+  { id: "carpet", name: "Karpet Terbang", emoji: "🪄", desc: "Karpet ajaib ungu-emas dari Agrabah. A whole new world menantimu!", Comp: MagicCarpet },
+  { id: "kinton", name: "Awan Kinton", emoji: "☁️", desc: "Awan kuning empuk milik Goku. Hanya yang berhati murni bisa menaikinya!", Comp: KintonCloud },
+  { id: "leaf", name: "Daun Raksasa", emoji: "🍃", desc: "Daun hijau lebar kendaraan para peri hutan. Ada embun seger di atasnya!", Comp: GiantLeaf },
+  { id: "sword", name: "Keris Terbang", emoji: "⚔️", desc: "Bilah keris berkelok dengan aura energi biru. Terbang ala pendekar wuxia!", Comp: FlyingSword },
+  { id: "pizza", name: "Pizza Slice", emoji: "🍕", desc: "Potongan pizza pepperoni dengan keju meleleh di pinggir. Mamma mia!", Comp: PizzaSlice },
+  { id: "sushi", name: "Sushi Salmon", emoji: "🍣", desc: "Nigiri salmon segar dengan ikat nori dan wasabi. Oishii desu~!", Comp: Sushi },
+  { id: "banana", name: "Pisang Kupas", emoji: "🍌", desc: "Duduk empuk di dalam pisang yang kulitnya terkupas. Potassium power!", Comp: Banana },
+  { id: "icecream", name: "Es Krim Leleh", emoji: "🍦", desc: "Es krim stroberi digigit sebagian, netes-netes manis plus sprinkles!", Comp: IceCream },
+  { id: "drone", name: "Drone Quadcopter", emoji: "🚁", desc: "Drone 4 baling-baling berputar kencang dengan kursi merah mini. Siap take-off!", Comp: Drone },
+] as const;
+

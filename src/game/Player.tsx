@@ -8,7 +8,7 @@ import { charBodyParts, charHeadParts, charTailParts, charWingParts, deckParts, 
 import { RIG, LegRig } from "./pigeonRig";
 import { nosTankParts } from "./models";
 import { buildShibuyaAnimalRig } from "./shibuyaPacks";
-import { getBuddyGeometry } from "./buddiesSkins";
+import { buildBuddyRig, VOXEL_BOARD_IDS } from "./buddiesSkins";
 
 /** Max truck steering angle (rad) at full lean — real trucks turn ~10–20° with the deck tilted ~15–20° */
 const TRUCK_MAX = 0.42;
@@ -51,11 +51,109 @@ function pushTarget(u: number, out: K): number {
   return u > 0.2 && u < 0.66 ? Math.sin(Math.PI * ((u - 0.2) / 0.46)) : 0;
 }
 
+/** Papan Drone Quadcopter dengan 4 baling-baling aktif berputar & animasi hovering */
+function AnimatedDroneDeck() {
+  const r0 = useRef<THREE.Group>(null);
+  const r1 = useRef<THREE.Group>(null);
+  const r2 = useRef<THREE.Group>(null);
+  const r3 = useRef<THREE.Group>(null);
+
+  useFrame((_, dt) => {
+    const spd = 40;
+    if (r0.current) r0.current.rotation.y += dt * spd;
+    if (r1.current) r1.current.rotation.y -= dt * spd;
+    if (r2.current) r2.current.rotation.y -= dt * spd;
+    if (r3.current) r3.current.rotation.y += dt * spd;
+  });
+
+  return (
+    <group rotation-y={Math.PI / 2} scale={0.46} position={[0, 0.048, 0]}>
+      {/* central body */}
+      <mesh position={[0, 0, 0]} material={voxelMaterial} castShadow>
+        <boxGeometry args={[1.9, 0.7, 4.0]} />
+      </mesh>
+      <mesh position={[0, -0.4, 0]} material={voxelMaterial}>
+        <boxGeometry args={[1.4, 0.3, 3.2]} />
+      </mesh>
+      {/* top spine */}
+      <mesh position={[0, 0.4, -0.3]} material={voxelMaterial}>
+        <boxGeometry args={[1.3, 0.25, 2.6]} />
+      </mesh>
+      {/* front camera */}
+      <mesh position={[0, -0.1, 2.1]} material={voxelMaterial}>
+        <boxGeometry args={[0.55, 0.45, 0.35]} />
+      </mesh>
+      <mesh position={[0, -0.1, 2.28]}>
+        <boxGeometry args={[0.3, 0.3, 0.1]} />
+        <meshBasicMaterial color="#5AC8FF" />
+      </mesh>
+      {/* rear status lights */}
+      <mesh position={[0.55, 0.1, -2.03]}>
+        <boxGeometry args={[0.25, 0.2, 0.1]} />
+        <meshBasicMaterial color="#FF5A5A" />
+      </mesh>
+      <mesh position={[-0.55, 0.1, -2.03]}>
+        <boxGeometry args={[0.25, 0.2, 0.1]} />
+        <meshBasicMaterial color="#FF5A5A" />
+      </mesh>
+      {/* 4 diagonal arms */}
+      <mesh position={[1.1, 0.05, 1.75]} rotation-y={-0.785} material={voxelMaterial} castShadow>
+        <boxGeometry args={[1.5, 0.25, 0.4]} />
+      </mesh>
+      <mesh position={[-1.1, 0.05, 1.75]} rotation-y={0.785} material={voxelMaterial} castShadow>
+        <boxGeometry args={[1.5, 0.25, 0.4]} />
+      </mesh>
+      <mesh position={[1.1, 0.05, -1.75]} rotation-y={0.785} material={voxelMaterial} castShadow>
+        <boxGeometry args={[1.5, 0.25, 0.4]} />
+      </mesh>
+      <mesh position={[-1.1, 0.05, -1.75]} rotation-y={-0.785} material={voxelMaterial} castShadow>
+        <boxGeometry args={[1.5, 0.25, 0.4]} />
+      </mesh>
+      {/* 4 rotors with spinning propellers */}
+      <group position={[1.7, 0.3, 2.35]}>
+        <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[0.4, 0.35, 0.4]} /></mesh>
+        <group ref={r0} position={[0, 0.25, 0]}>
+          <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[2.0, 0.08, 0.3]} /></mesh>
+          <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[0.3, 0.08, 2.0]} /></mesh>
+          <mesh position={[0, 0.07, 0]} material={voxelMaterial}><boxGeometry args={[0.25, 0.08, 0.25]} /></mesh>
+        </group>
+      </group>
+      <group position={[-1.7, 0.3, 2.35]}>
+        <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[0.4, 0.35, 0.4]} /></mesh>
+        <group ref={r1} position={[0, 0.25, 0]}>
+          <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[2.0, 0.08, 0.3]} /></mesh>
+          <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[0.3, 0.08, 2.0]} /></mesh>
+          <mesh position={[0, 0.07, 0]} material={voxelMaterial}><boxGeometry args={[0.25, 0.08, 0.25]} /></mesh>
+        </group>
+      </group>
+      <group position={[1.7, 0.3, -2.35]}>
+        <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[0.4, 0.35, 0.4]} /></mesh>
+        <group ref={r2} position={[0, 0.25, 0]}>
+          <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[2.0, 0.08, 0.3]} /></mesh>
+          <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[0.3, 0.08, 2.0]} /></mesh>
+          <mesh position={[0, 0.07, 0]} material={voxelMaterial}><boxGeometry args={[0.25, 0.08, 0.25]} /></mesh>
+        </group>
+      </group>
+      <group position={[-1.7, 0.3, -2.35]}>
+        <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[0.4, 0.35, 0.4]} /></mesh>
+        <group ref={r3} position={[0, 0.25, 0]}>
+          <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[2.0, 0.08, 0.3]} /></mesh>
+          <mesh position={[0, 0, 0]} material={voxelMaterial}><boxGeometry args={[0.3, 0.08, 2.0]} /></mesh>
+          <mesh position={[0, 0.07, 0]} material={voxelMaterial}><boxGeometry args={[0.25, 0.08, 0.25]} /></mesh>
+        </group>
+      </group>
+    </group>
+  );
+}
+
 export function Player() {
   // in the menu the carousel preview is shown; during a run the equipped skin
   const skinId = useUI((s) => (s.phase === "menu" ? s.preview : s.skin));
   const deckOverride = useUI((s) => s.deckOverride);
-  const wheellessDeck = deckOverride === "hoverboard" || deckOverride === "broom" || deckOverride === "silver" || deckOverride === "ufo";
+  const deckAdjustments = useUI((s) => s.deckAdjustments);
+  const deckAdj = (deckAdjustments && deckAdjustments[deckOverride]) || { scaleX: 1, scaleY: 1, scaleZ: 1, offsetY: 0 };
+  const isFloatingDeck = deckOverride === "hoverboard" || VOXEL_BOARD_IDS.has(deckOverride);
+  const wheellessDeck = isFloatingDeck;
   const broomDeck = deckOverride === "broom";
   const skin = getSkin(skinId);
   const pigeonSize = useUI((s) => s.pigeonSize);
@@ -113,7 +211,7 @@ export function Player() {
   // quadrupeds, the crane, and the capybara's bath setting.
   const friendRig = useMemo(() => (skin.kind === "littleJapanFriend" && skin.friend ? buildShibuyaAnimalRig(skin.friend) : null), [skin.kind, skin.friend]);
   const isBuddy = skin.kind === "buddy" && !!skin.buddyId;
-  const buddyGeo = useMemo(() => (isBuddy && skin.buddyId ? getBuddyGeometry(skin.buddyId) : null), [isBuddy, skin.buddyId]);
+  const buddyRig = useMemo(() => (isBuddy && skin.buddyId ? buildBuddyRig(skin.buddyId) : null), [isBuddy, skin.buddyId]);
   const buddyModel = useRef<THREE.Group>(null);
   const flameMats = useMemo(
     () => ({
@@ -131,6 +229,7 @@ export function Player() {
   useEffect(() => () => { starGeo.dispose(); starMat.dispose(); }, [starGeo, starMat]);
   useEffect(() => () => Object.values(geos).forEach((g) => g.dispose()), [geos]);
   useEffect(() => () => friendRig?.dispose(), [friendRig]);
+  useEffect(() => () => buddyRig?.dispose(), [buddyRig]);
   // IK legs: [0] = pushing leg on the camera side (+z), [1] = planted leg (-z)
   const legs = useMemo(() => [new LegRig(skin), new LegRig(skin)], [skin]);
   useEffect(() => () => legs.forEach((l) => l.dispose()), [legs]);
@@ -253,10 +352,10 @@ export function Player() {
       const g = p.grab; // +1 method (board pulled up behind), -1 indy (board tucked under)
       const grabLift = g > 0 ? g * 0.25 : 0;
       const grabTuck = g < 0 ? -g * 0.18 : 0;
-      // Floating boards ride 10% higher for a clear, magical hover silhouette.
-      // Magical boards float 40% higher than the original hover height.
-      const floatLift = deckOverride === "hoverboard" ? 0.14 + Math.sin(t * 5.5) * 0.034 : deckOverride === "broom" ? 0.168 + Math.sin(t * 4.2) * 0.025 : deckOverride === "silver" ? 0.126 + Math.sin(t * 4.8) * 0.030 : deckOverride === "ufo" ? 0.155 + Math.sin(t * 3.8) * 0.018 : 0;
-      bd.position.set(g > 0 ? -g * 0.2 : 0, RIG.boardY + grabLift + grabTuck + floatLift, 0);
+      // Floating boards ride higher (+40% higher from surface as requested: 0.155 * 1.4 = ~0.22)
+      const floatLift = isFloatingDeck ? 0.22 + Math.sin(t * 4.5) * 0.038 : 0;
+      bd.position.set(g > 0 ? -g * 0.2 : 0, RIG.boardY + grabLift + grabTuck + floatLift + (deckAdj.offsetY || 0), 0);
+      bd.scale.set(deckAdj.scaleX || 1, deckAdj.scaleY || 1, deckAdj.scaleZ || 1);
       // board yaws into the carve (nose points where the pigeon is going) on top of any trick rotation
       // NEW: in the air the feet steer the board, so it tilts a little MORE than the body (lean * 0.2)
       const airTilt = nm ? lv * 0.2 * p.airBlend : 0;
@@ -306,12 +405,26 @@ export function Player() {
           1 + 0.035 * jumpPose,
         );
       }
-      // Shift animates the selected source leg node itself. No replacement
-      // foot/body geometry is attached to the Friend rig.
+      // Shift animates the selected source leg node itself.
       friendRig?.setPush(u, ROAD_Y);
 
+      // Animasi Voxel Buddies seperti sistem milik Monkey:
+      // Gerakan tangan dan kaki pas loncat dan ngayuh SHIFT menggunakan tubuh hewan asli
+      if (buddyModel.current && buddyRig) {
+        const jumpPose = airborne ? Math.min(1, p.airT * 7) : 0;
+        buddyModel.current.position.set(pigeonPosX, pigeonPosY + 0.018 * jumpPose, 0);
+        buddyModel.current.rotation.set(-0.14 * jumpPose + p.pitch * 0.22, p.boardYaw * 0.12, p.roll * 0.18);
+        const bs = 0.24 * pigeonSize * buddyScale * buddyRig.scaleFactor;
+        buddyModel.current.scale.set(
+          bs * (1 + 0.035 * jumpPose),
+          bs * (1 - 0.075 * jumpPose),
+          bs * (1 + 0.035 * jumpPose),
+        );
+      }
+      buddyRig?.setPush(u, ROAD_Y);
+
       // ---- LENGAN/SAYAP: pose sesuai freestyle, BUKAN melambai ----
-      if (friendRig) {
+      if (friendRig || buddyRig) {
         const armK = 1 - Math.exp(-dt * 9);
         const breathe = Math.sin(t * 2.3) * 0.035;
         // stance santai: bahu sedikit ke belakang, lengan renggang tipis menjaga balance
@@ -324,7 +437,7 @@ export function Player() {
           // ayunan balik mengikuti hentakan kaki (mirroring pushSwing sayap merpati)
           const swing = 0.4 * (1 + 0.8 * spr) * Math.sin(Math.PI * Math.min(1, u));
           rxL -= swing;
-          rxR -= swing * 0.7;
+          rxR += swing * 0.7;
         } else if (christTrick) {
           // CHRIST AIR: kedua lengan terbentang lurus membentuk huruf T!
           rxL = -0.02; rxR = -0.02;
@@ -355,7 +468,8 @@ export function Player() {
           if (lvA > 0) spL += amt; else spR += amt;
         }
         // rz: lengan kanan terbuka = +, kiri terbuka = - (konvensi clip sumber)
-        friendRig.setArmPose({ rx: rxL, ry: 0, rz: -spL }, { rx: rxR, ry: 0, rz: spR }, armK);
+        friendRig?.setArmPose({ rx: rxL, ry: 0, rz: -spL }, { rx: rxR, ry: 0, rz: spR }, armK);
+        buddyRig?.setArmPose({ rx: rxL, ry: 0, rz: -spL }, { rx: rxR, ry: 0, rz: spR }, armK);
       }
 
       // hips in deck space (the pigeon group moved by hop/dip; the board is the reference)
@@ -443,6 +557,12 @@ export function Player() {
         friendModel.current.scale.setScalar(1);
         // lengan lunglai kembali ke bawah saat ragdoll (tanpa snap)
         friendRig.setArmPose(null, null, 1 - Math.exp(-dt * 5));
+      }
+      if (buddyModel.current && buddyRig) {
+        buddyModel.current.position.set(0, 0, 0);
+        buddyModel.current.rotation.set(0, 0, 0);
+        buddyModel.current.scale.setScalar(0.24 * pigeonSize * buddyScale * buddyRig.scaleFactor);
+        buddyRig.setArmPose(null, null, 1 - Math.exp(-dt * 5));
       }
       if (body) {
         // Pigeon ragdoll: rotate smoothly about center of mass (≈0.50 above feet)
@@ -695,7 +815,11 @@ export function Player() {
         <group scale={RIG.rootScale}>
           <group ref={bank} name="rig-bank">
             <group ref={board} name="rig-board" position={[0, RIG.boardY, 0]}>
-              <mesh geometry={geos.deck} material={voxelMaterial} castShadow receiveShadow />
+              {deckOverride === "drone" ? (
+                <AnimatedDroneDeck />
+              ) : (
+                <mesh geometry={geos.deck} material={voxelMaterial} castShadow receiveShadow />
+              )}
               <mesh ref={tanks} geometry={geos.tanks} material={voxelMaterial} position={[0, -0.16, 0]} visible={false} />
               {/* nitro flames out of the tail: three nested cones pointing backward (-x) */}
               <group ref={flames} position={[-0.85, -0.07, 0]} visible={false}>
@@ -760,16 +884,9 @@ export function Player() {
                   <primitive object={friendRig.group} />
                 </group>
               )}
-              {isBuddy && buddyGeo && (
+              {isBuddy && buddyRig && (
                 <group ref={buddyModel} position={[pigeonPosX, pigeonPosY, 0]}>
-                  <mesh
-                    geometry={buddyGeo}
-                    material={voxelMaterial}
-                    rotation={[0, Math.PI / 2, 0]}
-                    scale={0.24 * pigeonSize * buddyScale}
-                    castShadow
-                    receiveShadow
-                  />
+                  <primitive object={buddyRig.group} />
                 </group>
               )}
               {/* Keep the legacy rig mounted (and its refs alive) while hiding it for a full source animal rig. */}

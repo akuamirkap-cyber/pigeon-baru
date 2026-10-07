@@ -51,6 +51,8 @@ export function HUD() {
   const setPigeonPosX = useUI((s) => s.setPigeonPosX);
   const setPigeonAdjusting = useUI((s) => s.setPigeonAdjusting);
   const resetPigeonAdjust = useUI((s) => s.resetPigeonAdjust);
+  const buddyScale = useUI((s) => s.buddyScale);
+  const setBuddyScale = useUI((s) => s.setBuddyScale);
   const inRun = phase === "playing" || phase === "crashed";
   const nosReady = nos >= NOS_MAX * 0.99 && !nosActive;
   const sprint = useUI((s) => s.sprint);
@@ -421,9 +423,27 @@ export function HUD() {
               </span>
             </div>
 
+            {/* Slider 4: Skala Voxel Buddies (semua 33 karakter serentak) */}
+            <div className="flex items-center gap-2">
+              <span className="w-[17cqw] shrink-0 font-display text-[2.7cqw] leading-none text-white/95">🦊 BUDDIES</span>
+              <input
+                type="range"
+                min={0.4}
+                max={2.2}
+                step={0.02}
+                value={buddyScale}
+                onChange={(e) => setBuddyScale(parseFloat(e.target.value))}
+                className="h-2.5 flex-1 cursor-pointer accent-[#ff9f1c]"
+                aria-label="Skala ukuran semua Voxel Buddies"
+              />
+              <span className="w-[8.5cqw] shrink-0 text-right font-display text-[2.9cqw] leading-none text-[#ff9f1c]">
+                {buddyScale.toFixed(2)}x
+              </span>
+            </div>
+
             {/* Keterangan: Kaki tetap stabil */}
             <div className="flex items-center justify-between px-1 font-body text-[2.3cqw] font-bold text-white/70">
-              <span>* Kaki tetap di skateboard &amp; tidak ikut membesar</span>
+              <span>* Berlaku serentak untuk semua 33 Voxel Buddies</span>
             </div>
 
             {/* Tombol Reset & Selesai */}
