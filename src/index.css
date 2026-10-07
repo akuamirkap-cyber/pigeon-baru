@@ -575,6 +575,40 @@ body,
   transform: rotate(-6deg);
 }
 
+/* Skateboard deck picker focal card: showcase stage for the selected skateboard deck */
+.deck-showcase {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 80% 18%, rgba(255, 255, 255, 0.9) 0 8%, transparent 32%),
+    linear-gradient(125deg, #ffe2bd 0%, #fff1d8 50%, #ffd480 100%);
+}
+
+.deck-showcase::before {
+  position: absolute;
+  right: 15%;
+  bottom: -2.5rem;
+  z-index: -1;
+  width: 8.5rem;
+  height: 8.5rem;
+  border: 0.85rem solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  content: "";
+}
+
+.deck-showcase::after {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 0.7rem;
+  z-index: -1;
+  width: 42%;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: rgba(31, 36, 48, 0.18);
+  content: "";
+  filter: blur(0.32rem);
+  transform: rotate(-6deg);
+}
+
 /* One shared requestAnimationFrame clock updates every real WebGL frame in lockstep. */
 .skin-thumb-spin {
   display: block;

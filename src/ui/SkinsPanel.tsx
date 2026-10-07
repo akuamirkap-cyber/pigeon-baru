@@ -4,7 +4,7 @@ import { getSkin, SKINS, DECKS, type Skin, type DeckOption } from "../game/skins
 import { VOXEL_BOARD_IDS } from "../game/buddiesSkins";
 import { sfx } from "../game/audio";
 import { engine } from "../game/engine";
-import { ensureThumbs, getThumb, getThumbSprite, onThumbsReady, registerThumbSpin, THUMB_FRAME_COUNT } from "../game/thumbs";
+import { ensureThumbs, ensureDeckThumbs, getThumb, getThumbSprite, getDeckThumb, getDeckThumbSprite, onThumbsReady, onDeckThumbsReady, registerThumbSpin, THUMB_FRAME_COUNT } from "../game/thumbs";
 import { BreadIcon } from "./BreadIcon";
 import { PigeonIcon } from "./PigeonIcon";
 import { LockIcon } from "./LockIcon";
@@ -12,9 +12,14 @@ import { LockIcon } from "./LockIcon";
 function useThumbs() {
   const [, force] = useState(0);
   useEffect(() => {
-    const off = onThumbsReady(() => force((n) => n + 1));
+    const off1 = onThumbsReady(() => force((n) => n + 1));
+    const off2 = onDeckThumbsReady(() => force((n) => n + 1));
     if (ensureThumbs()) force((n) => n + 1);
-    return off;
+    if (ensureDeckThumbs()) force((n) => n + 1);
+    return () => {
+      off1();
+      off2();
+    };
   }, []);
 }
 
@@ -158,112 +163,102 @@ function SkinCard({ skin }: { skin: Skin }) {
   );
 }
 
-function DeckPreview3D({ deck }: { deck: DeckOption }) {
-  const isVoxel = VOXEL_BOARD_IDS.has(deck.id);
-  const deckId = deck.id;
-  const noWheels = deckId !== "default" && deckId !== "baguette";
-  if (isVoxel) {
+function DeckThumb({ deck, size }: { deck: DeckOption; size: number }) {
+  const spinRef = useRef<HTMLSpanElement>(null);
+  const sprite = getDeckThumbSprite(deck.id);
+  const url = getDeckThumb(deck.id);
+
+  useEffect(() => {
+    const element = spinRef.current;
+    if (!element || !sprite) return;
+    return registerThumbSpin(element);
+  }, [sprite]);
+
+  if (sprite) {
     return (
-      <div className="flex flex-col items-center justify-center gap-1 select-none py-1">
-        <span className="text-4xl animate-bounce drop-shadow-[0_4px_6px_rgba(0,0,0,0.15)]" role="img" aria-label={deck.name}>
-          {deck.emoji}
-        </span>
-        <span className="rounded-full bg-white/90 px-2 py-0.5 font-display text-[2.2cqw] font-bold text-amber-700 shadow-xs">
-          VOXEL 3D
-        </span>
-      </div>
+      <span
+        ref={spinRef}
+        role="img"
+        aria-label={deck.name}
+        className="skin-thumb-spin select-none"
+        style={{
+          width: size,
+          height: size,
+          backgroundImage: `url(${sprite})`,
+          backgroundSize: `${THUMB_FRAME_COUNT * 100}% 100%`,
+        }}
+      />
+    );
+  }
+  if (url) {
+    return (
+      <img
+        src={url}
+        width={size}
+        height={size}
+        draggable={false}
+        alt={deck.name}
+        className="select-none"
+      />
     );
   }
   return (
-    <div className={`deck-preview-3d ${deckId === "baguette" ? "deck-preview-baguette" : deckId === "hoverboard" ? "deck-preview-hoverboard" : "deck-preview-classic"}`} aria-hidden="true">
-      <div className="deck-preview-board">
-        <div className="deck-preview-grip" />
-        {!noWheels && <>
-          <div className="deck-preview-truck deck-preview-truck-front" />
-          <div className="deck-preview-truck deck-preview-truck-back" />
-          <div className="deck-preview-wheel deck-preview-wheel-a" />
-          <div className="deck-preview-wheel deck-preview-wheel-b" />
-          <div className="deck-preview-wheel deck-preview-wheel-c" />
-          <div className="deck-preview-wheel deck-preview-wheel-d" />
-        </>}
-      </div>
-    </div>
+    <span className="text-4xl drop-shadow-[0_4px_6px_rgba(0,0,0,0.15)] select-none" role="img" aria-label={deck.name}>
+      {deck.emoji}
+    </span>
   );
 }
 
 function DeckCard({
   deck,
   active,
+  previewing,
   onSelect,
-  onAdjust,
 }: {
   deck: DeckOption;
   active: boolean;
+  previewing: boolean;
   onSelect: () => void;
-  onAdjust: () => void;
 }) {
-  const isBaguette = deck.id === "baguette";
+  const isVoxel = VOXEL_BOARD_IDS.has(deck.id);
+
   return (
-    <div
+    <button
+      type="button"
       onClick={onSelect}
-      className={`cursor-pointer relative flex flex-col justify-between rounded-2xl p-3 shadow-[0_4px_0_rgba(0,0,0,0.1)] transition-all ${
-        active ? "bg-[#fff2db] ring-3 ring-[#ff9f1c]" : "bg-white ring-1 ring-black/5 hover:bg-white/95"
+      className={`relative flex w-full flex-col items-center rounded-[16px] border-t-4 px-1.5 pb-1.5 pt-1.5 shadow-[0_3px_0_rgba(0,0,0,0.12)] transition-transform hover:z-10 hover:scale-[1.015] active:translate-y-[2px] active:shadow-none ${
+        previewing
+          ? "bg-[#fff2db] ring-[3px] ring-[#ff9f1c]"
+          : active
+            ? "bg-[#f4fffd] ring-2 ring-[#2ec4b6]/40"
+            : "bg-white ring-1 ring-black/5"
       }`}
+      style={{ borderTopColor: isVoxel ? "#ff9f1c" : "#2ec4b6" }}
     >
-      {/* Top row: badge & state */}
-      <div className="flex items-center justify-between">
-        <span className={`rounded-full px-2 py-0.5 font-display text-[2.4cqw] leading-none ${isBaguette ? "bg-[#ff9f1c] text-white" : "bg-[#2ec4b6] text-white"}`}>
-          {deck.badge}
-        </span>
+      <div
+        className={`absolute left-1.5 top-0.5 z-20 rounded-full px-1.5 py-0.5 font-display text-[2.1cqw] leading-none ${
+          isVoxel
+            ? "bg-gradient-to-r from-[#ff9f1c] to-[#e63946] text-white shadow-[0_2px_0_rgba(180,60,0,0.35)]"
+            : "bg-[#2ec4b6] text-white shadow-[0_2px_0_#1f9a8f]"
+        }`}
+      >
+        {deck.badge}
+      </div>
+      <div className="relative flex h-[23cqw] w-full items-center justify-center overflow-hidden rounded-[12px] bg-gradient-to-b from-[#fdf6ea] to-[#faecd3] shadow-inner">
+        <DeckThumb deck={deck} size={88} />
         {active && (
-          <span className="rounded-full bg-[#2ec4b6] px-2 py-0.5 font-display text-[2.3cqw] leading-none text-white">
-            AKTIF ✓
-          </span>
+          <div className="absolute right-1 top-1 rounded-full bg-[#2ec4b6] px-1.5 py-0.5 font-display text-[2cqw] leading-none text-white shadow-[0_2px_0_#1f9a8f]">
+            ON
+          </div>
         )}
       </div>
-
-      {/* Visual illustration of deck */}
-      <div className="my-2 flex h-[26cqw] w-full items-center justify-center rounded-xl bg-gradient-to-b from-[#f0f4f8] to-[#e1e9f0] p-2">
-        <DeckPreview3D deck={deck} />
+      <div className="mt-0.5 w-full truncate text-center font-body text-[2.7cqw] font-extrabold text-[#1f2430]">
+        {deck.name}
       </div>
-
-      <div>
-        <div className="font-display text-[3.8cqw] leading-snug text-[#1f2430] flex items-center gap-1">
-          <span>{deck.emoji}</span> {deck.name}
-        </div>
-        <div className="mt-1 font-body text-[2.6cqw] font-bold text-[#6b7280] leading-snug">
-          {deck.tagline}
-        </div>
+      <div className="mt-0.5 font-display text-[2.3cqw] leading-none text-[#c9700a]">
+        {active ? "DIPAKAI ✓" : "PILIH"}
       </div>
-
-      <div className="mt-2.5 flex items-center gap-1.5">
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect();
-          }}
-          className={`flex-1 rounded-xl py-2 font-display text-[3.1cqw] leading-none transition-all ${
-            active
-              ? "bg-[#2ec4b6] text-white shadow-[0_3px_0_#1f9a8f]"
-              : "bg-[#ffd60a] text-[#1f2430] shadow-[0_3px_0_#c9a400] active:translate-y-[2px] active:shadow-none"
-          }`}
-        >
-          {active ? "DIPAKAI ✓" : "PAKAI"}
-        </button>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onAdjust();
-          }}
-          className="rounded-xl border border-black/15 bg-slate-100 px-2.5 py-2 font-display text-[2.6cqw] font-black text-slate-800 shadow-[0_2px_0_rgba(0,0,0,0.08)] transition hover:bg-white active:scale-95"
-          title="Atur ukuran dan posisi nempel kaki papan ini"
-        >
-          📏 ATUR
-        </button>
-      </div>
-    </div>
+    </button>
   );
 }
 
@@ -287,6 +282,23 @@ export function SkinsPanel() {
   const buddyScale = useUI((s) => s.buddyScale);
   const setBuddyScale = useUI((s) => s.setBuddyScale);
   const resetBuddyScale = useUI((s) => s.resetBuddyScale);
+
+  const [deckFilter, setDeckFilter] = useState<"all" | "standard" | "buddies">("all");
+  const [previewDeckId, setPreviewDeckId] = useState<DeckOption["id"]>(deckOverride);
+
+  useEffect(() => {
+    setPreviewDeckId(deckOverride);
+  }, [deckOverride]);
+
+  const currentDeck = DECKS.find((d) => d.id === previewDeckId) ?? DECKS[0];
+  const isCurrentDeckEquipped = deckOverride === currentDeck.id;
+
+  const filteredDecks = DECKS.filter((d) => {
+    const isVoxel = VOXEL_BOARD_IDS.has(d.id);
+    if (deckFilter === "standard") return !isVoxel;
+    if (deckFilter === "buddies") return isVoxel;
+    return true;
+  });
 
   const [shakeKey, setShakeKey] = useState(0);
   const current = getSkin(previewId);
@@ -331,17 +343,20 @@ export function SkinsPanel() {
     sfx.click();
     setWheelColor(c);
     engine.skinPop();
+    ensureDeckThumbs(208, true);
+    ensureThumbs(208, true);
     const label = WHEEL_COLORS.find((w) => w.id === c)?.label ?? "AUTO";
     addPopup(c === "auto" ? "BAN IKUT SKIN" : `BAN ${label}`, "#2ec4b6", "Warna roda skateboard");
   };
 
   const selectDeck = (d: DeckOption["id"]) => {
+    setPreviewDeckId(d);
     setDeckOverride(d);
     engine.skinPop();
     sfx.unlock();
     const opt = DECKS.find((k) => k.id === d);
     const title = opt ? opt.name.toUpperCase() : "PAPAN SKATE";
-    addPopup(`${title}!`, "#2ec4b6", "Papan skateboard aktif");
+    addPopup(`${title}!`, "#ff9f1c", "Papan skateboard aktif");
   };
 
   return (
@@ -551,85 +566,168 @@ export function SkinsPanel() {
             </div>
           </>
         ) : (
-          <div className="flex flex-1 flex-col overflow-y-auto px-4 pb-4" style={{ touchAction: "pan-y" }}>
-            {/* Banner: Atur Ukuran Papan & Export Data */}
-            <button
-              type="button"
-              onClick={() => {
-                sfx.click();
-                setAdjustTargetDeck(deckOverride);
-                setDeckAdjustOpen(true);
-              }}
-              className="mb-3 flex items-center justify-between rounded-2xl bg-gradient-to-r from-[#2ec4b6] via-[#0ea5e9] to-[#3b82f6] p-3 text-white shadow-[0_4px_12px_rgba(46,196,182,0.35)] transition-all hover:brightness-105 active:scale-[0.98]"
-            >
-              <div className="flex items-center gap-2.5 text-left">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/20 text-lg shadow-sm">
-                  🛠️
-                </span>
-                <div>
-                  <div className="font-display text-[3.1cqw] leading-tight text-white">
-                    ADJUST UKURAN PAPAN & EXPORT
+          <>
+            {/* Large selected-deck showcase: focal point just like the character skin showcase */}
+            <div className="deck-showcase relative mx-3 mb-1.5 h-[24cqw] min-h-[6.1rem] overflow-hidden rounded-[18px] px-3 py-1.5 shadow-[0_3px_0_rgba(31,36,48,0.14)]">
+              <div className="relative z-10 flex h-full w-[56%] flex-col items-start justify-center">
+                <div className="flex items-center gap-1">
+                  <div className="rounded-full bg-white/75 px-1.5 py-0.5 font-body text-[1.8cqw] font-black tracking-[0.12em] text-[#c9700a]">
+                    ETALASE PAPAN
                   </div>
-                  <div className="font-body text-[2.4cqw] font-bold text-white/90">
-                    Atur panjang, lebar, tebal & pastikan mepet di kaki
+                  <div className="rounded-full bg-[#ff9f1c] px-2 py-0.5 font-display text-[1.8cqw] leading-none text-white shadow-[0_2px_0_rgba(180,60,0,0.3)]">
+                    {currentDeck.badge}
                   </div>
                 </div>
+                <div className="mt-0.5 flex max-w-full items-center gap-1 font-display text-[3.8cqw] leading-[0.95] text-[#1f2430]">
+                  <span className="truncate">{currentDeck.name.toUpperCase()}</span>
+                </div>
+                <div className="max-w-full truncate font-body text-[2cqw] font-bold text-[#536476]">{currentDeck.tagline}</div>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => selectDeck(currentDeck.id)}
+                    disabled={isCurrentDeckEquipped}
+                    className={`flex items-center gap-1 rounded-lg px-2.5 py-1 font-display text-[2.6cqw] leading-none ${
+                      isCurrentDeckEquipped
+                        ? "bg-white/80 text-[#c9700a]"
+                        : "bg-[#ff9f1c] text-white shadow-[0_4px_0_#c9700a] active:translate-y-[2px]"
+                    }`}
+                  >
+                    {isCurrentDeckEquipped ? "DIPAKAI ✓" : "PAKAI"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sfx.click();
+                      setAdjustTargetDeck(currentDeck.id);
+                      setDeckAdjustOpen(true);
+                    }}
+                    className="rounded-lg border border-black/15 bg-white/90 px-2 py-1 font-display text-[2.2cqw] font-black text-slate-800 shadow-[0_2px_0_rgba(0,0,0,0.08)] active:scale-95"
+                    title="Atur ukuran & offset mepet kaki"
+                  >
+                    📏 ATUR
+                  </button>
+                </div>
               </div>
-              <span className="shrink-0 rounded-xl bg-white/25 px-2.5 py-1.5 font-display text-[2.5cqw] font-black text-white">
-                BUKA ⚙️
-              </span>
-            </button>
+              <div className="absolute -right-1 bottom-[-0.45rem] z-10 flex h-[7.3rem] w-[49%] items-end justify-center pointer-events-none">
+                <DeckThumb deck={currentDeck} size={135} />
+              </div>
+            </div>
 
-            <div className="mb-2 text-center font-body text-[2.8cqw] font-bold text-[#6b7280]">
-              Pilih papan skateboard yang ingin kamu pakai untuk berseluncur di jalanan Tokyo!
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {DECKS.map((d) => (
-                <DeckCard
-                  key={d.id}
-                  deck={d}
-                  active={deckOverride === d.id}
-                  onSelect={() => selectDeck(d.id)}
-                  onAdjust={() => {
-                    sfx.click();
-                    setAdjustTargetDeck(d.id);
-                    setDeckAdjustOpen(true);
-                  }}
-                />
-              ))}
+            {/* Category filter: Semua / Standar / Voxel Buddies */}
+            <div className="flex items-center gap-1.5 px-3 pb-1.5">
+              <button
+                type="button"
+                onClick={() => setDeckFilter("all")}
+                className={`rounded-full px-2.5 py-1 font-display text-[2.2cqw] leading-none transition-all ${
+                  deckFilter === "all"
+                    ? "bg-[#1f2430] text-white shadow-[0_2px_0_rgba(0,0,0,0.2)]"
+                    : "bg-white/80 text-[#536476] hover:bg-white active:translate-y-[1px]"
+                }`}
+              >
+                SEMUA ({DECKS.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeckFilter("standard")}
+                className={`rounded-full px-2.5 py-1 font-display text-[2.2cqw] leading-none transition-all ${
+                  deckFilter === "standard"
+                    ? "bg-[#2ec4b6] text-white shadow-[0_2px_0_#1f9a8f]"
+                    : "bg-white/80 text-[#536476] hover:bg-white active:translate-y-[1px]"
+                }`}
+              >
+                STANDAR ({DECKS.filter((d) => !VOXEL_BOARD_IDS.has(d.id)).length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeckFilter("buddies")}
+                className={`rounded-full px-2.5 py-1 font-display text-[2.2cqw] leading-none transition-all ${
+                  deckFilter === "buddies"
+                    ? "bg-gradient-to-r from-[#ff9f1c] to-[#e63946] text-white shadow-[0_2px_0_rgba(180,60,0,0.3)]"
+                    : "bg-white/80 text-[#d97706] hover:bg-white active:translate-y-[1px] font-bold"
+                }`}
+              >
+                🦊 BUDDIES ({DECKS.filter((d) => VOXEL_BOARD_IDS.has(d.id)).length})
+              </button>
             </div>
 
-            {/* warna ban: default hitam, bisa merah / hijau / kuning / biru */}
-            <div className="mt-3 rounded-2xl bg-white px-3 py-3 shadow-[0_3px_0_rgba(0,0,0,0.08)]">
-              <div className="flex items-baseline justify-between">
-                <div className="font-display text-[3.6cqw] leading-none text-[#1f2430]">WARNA BAN</div>
-                <div className="font-body text-[2.5cqw] font-extrabold tracking-[0.15em] text-[#9aa1ad]">DEFAULT HITAM</div>
+            <div className="flex-1 overflow-y-auto px-3 pb-2" style={{ touchAction: "pan-y" }}>
+              <div className="grid grid-cols-3 content-start gap-1.5">
+                {filteredDecks.map((d) => (
+                  <DeckCard
+                    key={d.id}
+                    deck={d}
+                    active={deckOverride === d.id}
+                    previewing={previewDeckId === d.id}
+                    onSelect={() => {
+                      sfx.click();
+                      setPreviewDeckId(d.id);
+                      selectDeck(d.id);
+                    }}
+                  />
+                ))}
               </div>
-              <div className="mt-2.5 flex flex-wrap gap-2">
-                {WHEEL_COLORS.map((c) => {
-                  const active = c.id === wheelColor;
-                  return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => selectWheel(c.id)}
-                      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 font-display text-[2.9cqw] leading-none transition-all ${
-                        active
-                          ? "bg-[#1f2430] text-white shadow-[0_3px_0_rgba(0,0,0,0.25)]"
-                          : "bg-[#eef0f3] text-[#1f2430]/80 active:translate-y-[1px]"
-                      }`}
-                    >
-                      <span
-                        className="h-[3.4cqw] w-[3.4cqw] shrink-0 rounded-full border border-black/20"
-                        style={{ background: c.hex }}
-                      />
-                      {c.label}
-                    </button>
-                  );
-                })}
+
+              {/* Banner: Atur Ukuran Papan & Export Data */}
+              <button
+                type="button"
+                onClick={() => {
+                  sfx.click();
+                  setAdjustTargetDeck(previewDeckId);
+                  setDeckAdjustOpen(true);
+                }}
+                className="mt-2.5 mb-2 flex w-full items-center justify-between rounded-2xl bg-gradient-to-r from-[#2ec4b6] via-[#0ea5e9] to-[#3b82f6] p-2.5 text-white shadow-[0_4px_12px_rgba(46,196,182,0.35)] transition-all hover:brightness-105 active:scale-[0.98]"
+              >
+                <div className="flex items-center gap-2 text-left">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/20 text-base shadow-sm">
+                    🛠️
+                  </span>
+                  <div>
+                    <div className="font-display text-[2.8cqw] leading-tight text-white">
+                      ADJUST UKURAN PAPAN & EXPORT
+                    </div>
+                    <div className="font-body text-[2.2cqw] font-bold text-white/90">
+                      Atur panjang, lebar, tebal & pastikan mepet di kaki
+                    </div>
+                  </div>
+                </div>
+                <span className="shrink-0 rounded-xl bg-white/25 px-2 py-1 font-display text-[2.3cqw] font-black text-white">
+                  BUKA ⚙️
+                </span>
+              </button>
+
+              {/* warna ban: default hitam, bisa merah / hijau / kuning / biru */}
+              <div className="mb-2 rounded-2xl bg-white px-3 py-2.5 shadow-[0_3px_0_rgba(0,0,0,0.08)]">
+                <div className="flex items-baseline justify-between">
+                  <div className="font-display text-[3.2cqw] leading-none text-[#1f2430]">WARNA BAN</div>
+                  <div className="font-body text-[2.2cqw] font-extrabold tracking-[0.15em] text-[#9aa1ad]">DEFAULT HITAM</div>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {WHEEL_COLORS.map((c) => {
+                    const active = c.id === wheelColor;
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => selectWheel(c.id)}
+                        className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 font-display text-[2.5cqw] leading-none transition-all ${
+                          active
+                            ? "bg-[#1f2430] text-white shadow-[0_3px_0_rgba(0,0,0,0.25)]"
+                            : "bg-[#eef0f3] text-[#1f2430]/80 active:translate-y-[1px]"
+                        }`}
+                      >
+                        <span
+                          className="h-[3cqw] w-[3cqw] shrink-0 rounded-full border border-black/20"
+                          style={{ background: c.hex }}
+                        />
+                        {c.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

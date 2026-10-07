@@ -10,7 +10,7 @@ import { DeckAdjustModal } from "./ui/DeckAdjustModal";
 import { suspendAudioForHiddenPage, resumeAudioFromHiddenPage } from "./game/audio";
 import { engine, track } from "./game/engine";
 import { useUI } from "./game/store";
-import { ensureThumbs } from "./game/thumbs";
+import { ensureThumbs, ensureDeckThumbs } from "./game/thumbs";
 import ShibuyaApp from "./shibuya/ShibuyaApp";
 import BuddiesApp from "./buddies/BuddiesApp";
 
@@ -110,14 +110,15 @@ export default function App() {
 
   useEffect(() => {
     if (gameMode !== "pigeon") return;
-    // pre-render the 3D skin thumbnails lazily after game is running smoothly
+    // pre-render the 3D skin and deck thumbnails lazily after game is running smoothly
     const t = setTimeout(() => {
       try {
         ensureThumbs();
+        ensureDeckThumbs();
       } catch {
         // ignore
       }
-    }, 3500);
+    }, 2500);
     return () => clearTimeout(t);
   }, [gameMode]);
 

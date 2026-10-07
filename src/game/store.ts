@@ -386,16 +386,19 @@ export const useUI = create<UIState>((set, get) => ({
     set({ trackMode });
   },
   deckAdjustments: (() => {
-    const saved = load<Record<string, Partial<DeckAdjustment>>>("pigeon-sk8-deck-adjustments", {});
+    const saved = load<Record<string, Partial<DeckAdjustment>>>("pigeon-sk8-deck-adjustments-v3", null as any);
+    if (!saved) {
+      save("pigeon-sk8-deck-adjustments-v3", DEFAULT_DECK_ADJUSTMENTS);
+      save("pigeon-sk8-deck-adjustments", DEFAULT_DECK_ADJUSTMENTS);
+      return { ...DEFAULT_DECK_ADJUSTMENTS };
+    }
     const result = { ...DEFAULT_DECK_ADJUSTMENTS };
-    if (saved && typeof saved === "object") {
-      for (const [key, val] of Object.entries(saved)) {
-        if (key in result && val) {
-          result[key as DeckId] = {
-            ...result[key as DeckId],
-            ...val,
-          };
-        }
+    for (const [key, val] of Object.entries(saved)) {
+      if (key in result && val) {
+        result[key as DeckId] = {
+          ...result[key as DeckId],
+          ...val,
+        };
       }
     }
     return result;
@@ -410,6 +413,7 @@ export const useUI = create<UIState>((set, get) => ({
         ...adj,
       },
     };
+    save("pigeon-sk8-deck-adjustments-v3", updated);
     save("pigeon-sk8-deck-adjustments", updated);
     set({ deckAdjustments: updated });
   },
@@ -419,16 +423,19 @@ export const useUI = create<UIState>((set, get) => ({
       ...prev,
       [id]: { ...(DEFAULT_DECK_ADJUSTMENTS[id] || { scale: 1, scaleX: 1, scaleY: 1, scaleZ: 1, offsetY: 0 }) },
     };
+    save("pigeon-sk8-deck-adjustments-v3", updated);
     save("pigeon-sk8-deck-adjustments", updated);
     set({ deckAdjustments: updated });
   },
   resetAllDeckAdjustments: () => {
     const updated = { ...DEFAULT_DECK_ADJUSTMENTS };
+    save("pigeon-sk8-deck-adjustments-v3", updated);
     save("pigeon-sk8-deck-adjustments", updated);
     set({ deckAdjustments: updated });
   },
   applyDefaultJsonAdjustments: () => {
     const updated = { ...DEFAULT_DECK_ADJUSTMENTS };
+    save("pigeon-sk8-deck-adjustments-v3", updated);
     save("pigeon-sk8-deck-adjustments", updated);
     set({ deckAdjustments: updated });
   },

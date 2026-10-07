@@ -3,7 +3,7 @@ import { buildVoxelGeometry, clamp, voxelMaterial, type Part } from "./voxel";
 import { getShibuyaAnimalGeo, getShibuyaAnimalPlayerScale } from "./shibuyaPacks";
 import { getBuddyGeometry, getBuddyScaleFactor, VOXEL_BOARD_IDS } from "./buddiesSkins";
 import { useUI } from "./store";
-import { charBodyParts, charHeadParts, charLegParts, charTailParts, charWingParts, deckParts, truckParts, wheelParts, HIP_Y, LEG_Z, TAIL_ROOT, type Skin, type DeckId } from "./skins";
+import { charBodyParts, charHeadParts, charLegParts, charTailParts, charWingParts, deckParts, truckParts, wheelParts, HIP_Y, LEG_Z, TAIL_ROOT, type Skin, type DeckId, SKINS } from "./skins";
 
 /** Shared placement constants for the pigeon-on-board rig (used by the Player and the 3D thumbnails). */
 export const RIG = {
@@ -115,55 +115,56 @@ export class LegRig {
   }
 }
 
-/** Plain three.js assembly of a skin (static riding pose). */
+/** Plain three.js assembly of a skin (character only when includeBoard is false). */
 export function buildPigeonGroup(
   skin: Skin,
   deckOverride: DeckId = "default",
   wheelColor: string = "auto",
+  includeBoard: boolean = false,
 ): { group: THREE.Group; dispose: () => void } {
-  const geos = [
-    buildVoxelGeometry(charBodyParts(skin)),
-    buildVoxelGeometry(charHeadParts(skin)),
-    buildVoxelGeometry(charWingParts(skin, 1)),
-    buildVoxelGeometry(charWingParts(skin, -1)),
-    buildVoxelGeometry(deckParts(skin, deckOverride)),
-    buildVoxelGeometry(wheelParts(skin, deckOverride, wheelColor)),
-    buildVoxelGeometry(truckParts()),
-    buildVoxelGeometry(charTailParts(skin)),
-  ];
-  const [body, head, wingR, wingL, deck, wheel, truck, tail] = geos;
+  const geos: THREE.BufferGeometry[] = [];
+  const legs: LegRig[] = [];
+
   const group = new THREE.Group();
   const scaled = new THREE.Group();
   scaled.scale.setScalar(RIG.rootScale);
   group.add(scaled);
 
-  const isWheelless = deckOverride === "hoverboard" || VOXEL_BOARD_IDS.has(deckOverride);
-  const deckAdj = useUI.getState?.().deckAdjustments?.[deckOverride] || { scaleX: 1, scaleY: 1, scaleZ: 1, offsetY: 0 };
-  const floatClearance = isWheelless ? 0.22 : 0;
+  if (includeBoard) {
+    const isWheelless = deckOverride === "hoverboard" || VOXEL_BOARD_IDS.has(deckOverride);
+    const deckAdj = useUI.getState?.().deckAdjustments?.[deckOverride] || { scaleX: 1, scaleY: 1, scaleZ: 1, offsetY: 0 };
+    const floatClearance = isWheelless ? 0.22 : 0;
+    const deckGeo = buildVoxelGeometry(deckParts(skin, deckOverride));
+    geos.push(deckGeo);
 
-  const board = new THREE.Group();
-  board.position.y = RIG.boardY + floatClearance + (deckAdj.offsetY || 0);
-  board.scale.set(deckAdj.scaleX || 1, deckAdj.scaleY || 1, deckAdj.scaleZ || 1);
-  board.add(new THREE.Mesh(deck, voxelMaterial));
-  if (!isWheelless) {
-    for (const sx of [1, -1]) {
-      const tr = new THREE.Group();
-      tr.position.set(sx * RIG.truckX, RIG.truckY, 0);
-      tr.add(new THREE.Mesh(truck, voxelMaterial));
-      for (const z of [RIG.wheelZ, -RIG.wheelZ]) {
-        const m = new THREE.Mesh(wheel, voxelMaterial);
-        m.position.set(0, RIG.wheelDrop, z);
-        tr.add(m);
+    const board = new THREE.Group();
+    board.position.y = RIG.boardY + floatClearance + (deckAdj.offsetY || 0);
+    board.scale.set(deckAdj.scaleX || 1, deckAdj.scaleY || 1, deckAdj.scaleZ || 1);
+    board.add(new THREE.Mesh(deckGeo, voxelMaterial));
+
+    if (!isWheelless) {
+      const wheelGeo = buildVoxelGeometry(wheelParts(skin, deckOverride, wheelColor));
+      const truckGeo = buildVoxelGeometry(truckParts());
+      geos.push(wheelGeo, truckGeo);
+
+      for (const sx of [1, -1]) {
+        const tr = new THREE.Group();
+        tr.position.set(sx * RIG.truckX, RIG.truckY, 0);
+        tr.add(new THREE.Mesh(truckGeo, voxelMaterial));
+        for (const z of [RIG.wheelZ, -RIG.wheelZ]) {
+          const m = new THREE.Mesh(wheelGeo, voxelMaterial);
+          m.position.set(0, RIG.wheelDrop, z);
+          tr.add(m);
+        }
+        board.add(tr);
       }
-      board.add(tr);
     }
+    scaled.add(board);
   }
-  scaled.add(board);
 
   const pigeon = new THREE.Group();
-  pigeon.position.y = RIG.pigeonY + floatClearance;
   pigeon.scale.setScalar(RIG.pigeonScale);
-  const legs: LegRig[] = [];
+
   if (skin.kind === "littleJapanFriend" && skin.friend) {
     // Keep the exact Shibuya Blocks animal geometry intact. It is cached by the
     // source pack and therefore deliberately not disposed with this thumbnail.
@@ -179,18 +180,25 @@ export function buildPigeonGroup(
     buddy.scale.setScalar(0.24 * sf * bs);
     pigeon.add(buddy);
   } else {
-    pigeon.add(new THREE.Mesh(body, voxelMaterial));
-    const h = new THREE.Mesh(head, voxelMaterial);
+    const bodyGeo = buildVoxelGeometry(charBodyParts(skin));
+    const headGeo = buildVoxelGeometry(charHeadParts(skin));
+    const wingRGeo = buildVoxelGeometry(charWingParts(skin, 1));
+    const wingLGeo = buildVoxelGeometry(charWingParts(skin, -1));
+    const tailGeo = buildVoxelGeometry(charTailParts(skin));
+    geos.push(bodyGeo, headGeo, wingRGeo, wingLGeo, tailGeo);
+
+    pigeon.add(new THREE.Mesh(bodyGeo, voxelMaterial));
+    const h = new THREE.Mesh(headGeo, voxelMaterial);
     h.position.set(...RIG.headPos);
     h.rotation.y = RIG.headRotY;
     pigeon.add(h);
-    const wr = new THREE.Mesh(wingR, voxelMaterial);
+    const wr = new THREE.Mesh(wingRGeo, voxelMaterial);
     wr.position.set(...RIG.wingRPos);
     pigeon.add(wr);
-    const wl = new THREE.Mesh(wingL, voxelMaterial);
+    const wl = new THREE.Mesh(wingLGeo, voxelMaterial);
     wl.position.set(...RIG.wingLPos);
     pigeon.add(wl);
-    const tl = new THREE.Mesh(tail, voxelMaterial);
+    const tl = new THREE.Mesh(tailGeo, voxelMaterial);
     tl.position.set(...TAIL_ROOT);
     pigeon.add(tl);
     legs.push(new LegRig(skin, voxelMaterial, false), new LegRig(skin, voxelMaterial, false));
@@ -198,6 +206,18 @@ export function buildPigeonGroup(
     legs[1].root.position.set(0, HIP_Y, -LEG_Z);
     legs.forEach((l) => pigeon.add(l.root));
   }
+
+  // When board is excluded (character showcase & thumbnails), center character at origin (0, 0, 0)
+  if (!includeBoard) {
+    pigeon.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(pigeon);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    pigeon.position.sub(center);
+  } else {
+    pigeon.position.y = RIG.pigeonY;
+  }
+
   scaled.add(pigeon);
 
   return {
@@ -208,3 +228,61 @@ export function buildPigeonGroup(
     },
   };
 }
+
+  /** Plain three.js assembly of a skateboard deck (isolated from rider, centered for 3D showcase/thumbs). */
+  export function buildBoardGroup(
+    deckId: DeckId = "default",
+    wheelColor: string = "auto",
+    skin?: Skin,
+  ): { group: THREE.Group; dispose: () => void } {
+    const dummySkin = skin ?? SKINS[0];
+    const isWheelless = deckId === "hoverboard" || VOXEL_BOARD_IDS.has(deckId);
+    const deckGeo = buildVoxelGeometry(deckParts(dummySkin, deckId));
+    const geos: THREE.BufferGeometry[] = [deckGeo];
+
+    const group = new THREE.Group();
+    const board = new THREE.Group();
+    board.add(new THREE.Mesh(deckGeo, voxelMaterial));
+
+    if (!isWheelless) {
+      const wheelGeo = buildVoxelGeometry(wheelParts(dummySkin, deckId, wheelColor));
+      const truckGeo = buildVoxelGeometry(truckParts());
+      geos.push(wheelGeo, truckGeo);
+
+      for (const sx of [1, -1]) {
+        const tr = new THREE.Group();
+        tr.position.set(sx * RIG.truckX, RIG.truckY, 0);
+        tr.add(new THREE.Mesh(truckGeo, voxelMaterial));
+        for (const z of [RIG.wheelZ, -RIG.wheelZ]) {
+          const m = new THREE.Mesh(wheelGeo, voxelMaterial);
+          m.position.set(0, RIG.wheelDrop, z);
+          tr.add(m);
+        }
+        board.add(tr);
+      }
+    }
+
+    // Apply deck adjustment scale if configured
+    const deckAdj = useUI.getState?.().deckAdjustments?.[deckId];
+    if (deckAdj) {
+      const s = deckAdj.scale ?? 1;
+      board.scale.set((deckAdj.scaleX || 1) * s, (deckAdj.scaleY || 1) * s, (deckAdj.scaleZ || 1) * s);
+    }
+
+    // Center board geometry at origin (0, 0, 0) for perfect turntable rotation
+    board.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(board);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    board.position.sub(center);
+
+    group.add(board);
+
+    return {
+      group,
+      dispose: () => {
+        geos.forEach((g) => g.dispose());
+      },
+    };
+  }
+
